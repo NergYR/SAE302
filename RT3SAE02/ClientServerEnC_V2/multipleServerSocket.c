@@ -1,11 +1,33 @@
 /* multipleServerSocket.c */ 
 #include <stdio.h> 
 #include <stdlib.h> 
-#include <strings.h> 
+#include <string.h> 
 #include <unistd.h> 
 #include <sys/types.h> 
 #include <sys/socket.h> 
-#include <netinet/in.h> 
+#include <netinet/in.h>
+
+
+
+// Function to get configuration from file 
+void getServerPort(const char *filename, int *port, char* serverName) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Unable to open file");
+        exit(EXIT_FAILURE);
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), file)) {
+        if (strncmp(line, "ServerPort", 10) == 0) {
+            sscanf(line, "ServerPort = \"%d\"", port);
+        } else if (strncmp(line, "Servername", 10) == 0) {
+            sscanf(line, "Servername = \"%[^\"]\"", serverName);
+        }
+    }
+
+    fclose(file);
+}
  
 void doprocessing (int sock) 
 { 
@@ -15,7 +37,18 @@ void doprocessing (int sock)
     bzero(buffer,256); 
      
     n = read(sock,buffer,255); 
-     
+    // Write JSON data into json file
+    FILE *file = fopen("data.json", "w");
+    if (file == NULL) {
+        perror("Unable to open file");
+        exit(EXIT_FAILURE);
+    }
+    fprintf(file, "{\"data\": \"%s\"}\n", buffer);
+    fprintf(file, "%s", buffer);
+    fclose(file);
+    // End writing JSON data into json file
+
+
     printf("Here is the message: %s\n",buffer); 
     n = write(sock,"I got your message",18);      
 } 
@@ -29,17 +62,24 @@ int main( int argc, char *argv[] )
     struct sockaddr_in serv_addr, cli_addr; 
     int  n; 
     pid_t pid; 
-     
+    int port;
+    char serverName[256];
+    getServerPort("/home/kali/CODE/SAE302/config.conf", &port, serverName);
+    printf("Server port: %d\n", port);
+    printf("Server name: %s\n", serverName);
+
+
+
+
     /* First call to socket() function */ 
     sockfd = socket(PF_INET, SOCK_STREAM, 0); 
      
     /* Initialize socket structure */ 
     bzero((char *) &serv_addr, sizeof(serv_addr)); 
-    portno = 5001; 
      
     serv_addr.sin_family = AF_INET; 
     serv_addr.sin_addr.s_addr = INADDR_ANY; 
-    serv_addr.sin_port = htons(portno); 
+    serv_addr.sin_port = htons(port); 
      
     /* Now bind the host address using bind() call.*/ 
     bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)); 
