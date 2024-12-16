@@ -6,36 +6,25 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <gtk/gtk.h>
+#include <SDL2/SDL.h>
 
-// Callback function for button click
-static void on_button_clicked(GtkWidget *widget, gpointer data) {
-    g_print("Button clicked\n");
-}
 
 int main(int argc, char *argv[]) {
-    // Initialize GTK
-    gtk_init(&argc, &argv);
+    SDL_Init(SDL_INIT_VIDEO);
 
-    // Create a new window
-    GtkWidget *window = gtk_window_new();
-    gtk_window_set_title(GTK_WINDOW(window), "Simple GTK Application");
-    gtk_window_set_default_size(GTK_WINDOW(window), 400, 300);
+    SDL_Window *window = SDL_CreateWindow("Hello SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
 
-    // Create a new button
-    GtkWidget *button = gtk_button_new_with_label("Click Me");
+    SDL_SetRenderDrawColor(renderer, 0, 128, 255, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderPresent(renderer);
 
-    // Connect the button's "clicked" signal to the callback function
-    g_signal_connect(button, "clicked", G_CALLBACK(on_button_clicked), NULL);
+    SDL_Delay(3000);
 
-    // Add the button to the window
-    gtk_window_set_child(GTK_WINDOW(window), button);
-
-    // Show the window and all its child widgets
-    gtk_widget_show(window);
-
-    // Run the GTK main loop
-    gtk_main();
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
 
     return 0;
 }
+
