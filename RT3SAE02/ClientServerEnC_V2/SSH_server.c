@@ -11,6 +11,11 @@ void handle_client(ssh_session session) {
     ssh_message message;
     int auth = 0;
 
+    if (session == NULL) {
+        fprintf(stderr, "[ERROR] Session SSH invalide\n");
+        return;
+    }
+
     printf("[DEBUG] Début de la gestion du client\n");
 
     // Authentification simple avec nom d'utilisateur et mot de passe
@@ -21,44 +26,29 @@ void handle_client(ssh_session session) {
             const char* user = ssh_message_auth_user(message);
             const char* pass = ssh_message_auth_password(message);
             printf("[DEBUG] Tentative d'authentification - Utilisateur: %s\n", user);
-            if (strcmp(user, "user") == 0 && strcmp(pass, "password") == 0) {
-                ssh_message_auth_reply_success(message, 0);
-                auth = 1;
+
+            // Vérification des informations d'authentification
+            if (strcmp(user, "utilisateur_attendu") == 0 && strcmp(pass, "mot_de_passe_attendu") == 0) {
                 printf("[DEBUG] Authentification réussie\n");
-                break;
+                auth = 1;
+                ssh_message_auth_reply_success(message, 0);
             } else {
                 printf("[DEBUG] Authentification échouée\n");
+                ssh_message_auth_set_methods(message, SSH_AUTH_METHOD_PASSWORD);
                 ssh_message_reply_default(message);
             }
+        } else {
+            ssh_message_reply_default(message);
         }
         ssh_message_free(message);
     }
 
     if (!auth) {
-        fprintf(stderr, "Authentification échouée\n");
-        return;
+        fprintf(stderr, "[ERROR] Échec de l'authentification\n");
+        ssh_disconnect(session);
     }
 
-    // Création et ouverture d'un canal
-    printf("[DEBUG] Création d'un canal\n");
-    ssh_channel channel = ssh_channel_new(session);
-    if (ssh_channel_open_session(channel) != SSH_OK) {
-        fprintf(stderr, "Erreur d'ouverture de canal : %s\n", ssh_get_error(session));
-        ssh_channel_free(channel);
-        return;
-    }
-
-    // Envoi d'un message au client
-    printf("[DEBUG] Envoi du message au client\n");
-    if (ssh_channel_write(channel, MESSAGE, strlen(MESSAGE)) == SSH_ERROR) {
-        fprintf(stderr, "Erreur d'envoi des données : %s\n", ssh_get_error(session));
-    }
-
-    // Fermeture du canal
-    printf("[DEBUG] Fermeture du canal\n");
-    ssh_channel_send_eof(channel);
-    ssh_channel_close(channel);
-    ssh_channel_free(channel);
+    printf("[DEBUG] Fin de la gestion du client\n");
 }
 
 int main() {
@@ -66,59 +56,47 @@ int main() {
     ssh_session session;
     int rc;
 
-    printf("[DEBUG] Initialisation du serveur SSH\n");
-
-    // Initialisation du serveur SSH
     sshbind = ssh_bind_new();
     if (sshbind == NULL) {
-        fprintf(stderr, "Erreur lors de l'initialisation de ssh_bind\n");
-        exit(1);
+        fprintf(stderr, "[ERROR] Erreur lors de la création de ssh_bind\n");
+        return EXIT_FAILURE;
     }
 
-    // Configuration des options du serveur
-    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDADDR, "127.0.0.1");
-    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT, PORT);
-    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_RSAKEY, "ssh_keys");
+    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDADDR, "0.0.0.0");
+    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT_STR, PORT);
+    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_HOSTKEY, "ssh-rsa");
 
-    // Lancement de l'écoute du serveur SSH
-    printf("[DEBUG] Lancement de l'écoute sur le port %s\n", PORT);
-    if (ssh_bind_listen(sshbind) < 0) {
-        fprintf(stderr, "Erreur d'écoute : %s\n", ssh_get_error(sshbind));
+    rc = ssh_bind_listen(sshbind);
+    if (rc < 0) {
+        fprintf(stderr, "[ERROR] Erreur lors de l'écoute sur le port %s: %s\n", PORT, ssh_get_error(sshbind));
         ssh_bind_free(sshbind);
-        exit(1);
+        return EXIT_FAILURE;
     }
-    printf("Serveur SSH en écoute sur le port %s\n", PORT);
+
+    printf("[DEBUG] Serveur SSH en écoute sur le port %s\n", PORT);
 
     while (1) {
-        // Acceptation d'une nouvelle connexion
-        printf("[DEBUG] Attente d'une nouvelle connexion\n");
         session = ssh_new();
         if (session == NULL) {
-            fprintf(stderr, "Erreur lors de la création de la session SSH\n");
+            fprintf(stderr, "[ERROR] Erreur lors de la création de la session SSH\n");
             continue;
         }
 
         rc = ssh_bind_accept(sshbind, session);
-        if (rc != SSH_OK) {
-            fprintf(stderr, "Erreur d'acceptation de connexion : %s\n", ssh_get_error(sshbind));
+        if (rc == SSH_ERROR) {
+            fprintf(stderr, "[ERROR] Erreur lors de l'acceptation de la connexion: %s\n", ssh_get_error(sshbind));
             ssh_free(session);
             continue;
         }
 
-        printf("[DEBUG] Nouvelle connexion acceptée\n");
+        printf("[DEBUG] Connexion acceptée\n");
 
-        // Gérer la session client
         handle_client(session);
 
-        // Libération des ressources de la session
-        printf("[DEBUG] Fermeture de la session client\n");
         ssh_disconnect(session);
         ssh_free(session);
     }
 
-    // Libération des ressources du serveur
-    printf("[DEBUG] Fermeture du serveur SSH\n");
     ssh_bind_free(sshbind);
-    ssh_finalize();
-    return 0;
+    return EXIT_SUCCESS;
 }
