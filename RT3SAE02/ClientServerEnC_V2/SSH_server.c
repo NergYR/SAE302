@@ -18,6 +18,12 @@ void handle_client(ssh_session session) {
 
     printf("[DEBUG] Début de la gestion du client\n");
 
+    if(ssh_handle_key_exchange(session) != SSH_OK) {
+        fprintf(stderr, "[ERROR] Erreur lors de l'échange de clés: %s\n", ssh_get_error(session));
+        ssh_disconnect(session);
+        return;
+    }
+
     // Authentification simple avec nom d'utilisateur et mot de passe
     while ((message = ssh_message_get(session)) != NULL) {
         printf("[DEBUG] Reçu un message d'authentification\n");
@@ -28,7 +34,7 @@ void handle_client(ssh_session session) {
             printf("[DEBUG] Tentative d'authentification - Utilisateur: %s\n", user);
 
             // Vérification des informations d'authentification
-            if (strcmp(user, "utilisateur_attendu") == 0 && strcmp(pass, "mot_de_passe_attendu") == 0) {
+            if (strcmp(user, "user1") == 0 && strcmp(pass, "password") == 0) {
                 printf("[DEBUG] Authentification réussie\n");
                 auth = 1;
                 ssh_message_auth_reply_success(message, 0);
