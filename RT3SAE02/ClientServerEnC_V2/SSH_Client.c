@@ -5,7 +5,7 @@
 
 #define SERVER_IP "127.0.0.1"  // Adresse IP du serveur
 #define SERVER_PORT 5959       // Port personnalisé
-#define USERNAME "user"        // Nom d'utilisateur
+#define USERNAME "root"        // Nom d'utilisateur
 #define PASSWORD "password"    // Mot de passe
 
 int main() {
@@ -14,77 +14,80 @@ int main() {
     int rc;
     char buffer[256];
     int nbytes;
+    const char *message = "\nid;name;age\n1;joe;29\n";
 
     // Initialisation de la session SSH
     session = ssh_new();
     if (session == NULL) {
-        fprintf(stderr, "Erreur : Impossible de créer une session SSH\n");
-        return -1;
+        fprintf(stderr, "Erreur lors de la création de la session SSH\n");
+        return EXIT_FAILURE;
     }
-    int port;
-    port = SERVER_PORT;
 
-    // Configuration de la session
+    // Configuration de la session SSH
+    int port = SERVER_PORT;
     ssh_options_set(session, SSH_OPTIONS_HOST, SERVER_IP);
     ssh_options_set(session, SSH_OPTIONS_PORT, &port);
-    ssh_options_set(session, SSH_OPTIONS_USER, USERNAME);
 
-    // Connexion au serveur
+    // Connexion au serveur SSH
     rc = ssh_connect(session);
     if (rc != SSH_OK) {
         fprintf(stderr, "Erreur de connexion : %s\n", ssh_get_error(session));
         ssh_free(session);
-        return -1;
+        return EXIT_FAILURE;
     }
-    printf("Connecté au serveur SSH %s:%d\n", SERVER_IP, SERVER_PORT);
 
-    // Authentification par mot de passe
-    rc = ssh_userauth_password(session, NULL, PASSWORD);
+    // Authentification
+    rc = ssh_userauth_password(session, USERNAME, PASSWORD);
     if (rc != SSH_AUTH_SUCCESS) {
         fprintf(stderr, "Erreur d'authentification : %s\n", ssh_get_error(session));
         ssh_disconnect(session);
         ssh_free(session);
-        return -1;
-    }
-    printf("Authentification réussie\n");
-
-    // Création d'un canal
-    channel = ssh_channel_new(session);
-    if (channel == NULL) {
-        fprintf(stderr, "Erreur : Impossible de créer un canal SSH\n");
-        ssh_disconnect(session);
-        ssh_free(session);
-        return -1;
+        return EXIT_FAILURE;
     }
 
     // Ouverture du canal
+    channel = ssh_channel_new(session);
+    if (channel == NULL) {
+        fprintf(stderr, "Erreur lors de la création du canal\n");
+        ssh_disconnect(session);
+        ssh_free(session);
+        return EXIT_FAILURE;
+    }
+
     rc = ssh_channel_open_session(channel);
     if (rc != SSH_OK) {
-        fprintf(stderr, "Erreur d'ouverture de canal : %s\n", ssh_get_error(session));
+        fprintf(stderr, "Erreur lors de l'ouverture du canal : %s\n", ssh_get_error(session));
         ssh_channel_free(channel);
         ssh_disconnect(session);
         ssh_free(session);
-        return -1;
+        return EXIT_FAILURE;
     }
 
-    // Lecture des données envoyées par le serveur
-    printf("Lecture des données envoyées par le serveur...\n");
-    while ((nbytes = ssh_channel_read(channel, buffer, sizeof(buffer) - 1, 0)) > 0) {
-        buffer[nbytes] = '\0';  // Null-terminate the string
-        printf("%s", buffer);
+    // Envoi de la chaîne de caractères
+    rc = ssh_channel_write(channel, message, strlen(message));
+    if (rc < 0) {
+        fprintf(stderr, "Erreur lors de l'envoi du message : %s\n", ssh_get_error(session));
+        ssh_channel_close(channel);
+        ssh_channel_free(channel);
+        ssh_disconnect(session);
+        ssh_free(session);
+        return EXIT_FAILURE;
     }
 
+    // Lecture de la réponse
+    nbytes = ssh_channel_read(channel, buffer, sizeof(buffer), 0);
     if (nbytes < 0) {
-        fprintf(stderr, "Erreur lors de la lecture : %s\n", ssh_get_error(session));
+        fprintf(stderr, "Erreur lors de la lecture de la réponse : %s\n", ssh_get_error(session));
+    } else {
+        printf("Réponse du serveur : %.*s\n", nbytes, buffer);
     }
 
-    // Fermeture et nettoyage
+    // Fermeture du canal et de la session
     ssh_channel_send_eof(channel);
     ssh_channel_close(channel);
     ssh_channel_free(channel);
     ssh_disconnect(session);
     ssh_free(session);
 
-    printf("\nDéconnexion du serveur SSH\n");
-    return 0;
+    return EXIT_SUCCESS;
 }
