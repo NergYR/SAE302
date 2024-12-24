@@ -6,7 +6,7 @@
 #include <sys/types.h> 
 #include <sys/socket.h> 
 #include <netinet/in.h>
-
+#include "server.h"
 
 
 // Function to get configuration from file 
@@ -33,7 +33,6 @@ void getServerPort(const char *filename, int *port, char* serverName, char* isSe
  
 
 
-
 int main( int argc, char *argv[] ) 
 { 
     int sockfd, newsockfd, portno; 
@@ -50,8 +49,14 @@ int main( int argc, char *argv[] )
     printf("Server name: %s\n", serverName);
     printf("Is secured: %s\n", isSecured);
 
+    if(strncmp(isSecured, "true", 4)  == 0) {
+        printf("Secured server\n");
+        //secured_server(port);
+    } else {
+        printf("Unsecured server\n");
+        unSecured_server(port);
+
+    }
 
 
-
-   
 } 
