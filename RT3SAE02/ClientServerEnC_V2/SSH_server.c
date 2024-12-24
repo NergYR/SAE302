@@ -4,7 +4,27 @@
 #include <stdlib.h>
 #include <string.h>
 #include <poll.h>
+#include <pthread.h>
 #include "server.h"
+
+// Structure pour les données client
+typedef struct {
+    ssh_session session;
+    char *username;
+    char *password;
+} client_data_t;
+
+// Fonction pour gérer chaque client dans un thread
+void *handle_client_thread(void *arg) {
+    client_data_t *data = (client_data_t *)arg;
+    
+    handle_client(data->session, data->username, data->password);
+    
+    ssh_disconnect(data->session);
+    ssh_free(data->session);
+    free(data);
+    pthread_exit(NULL);
+}
 
 int secured_server(int port, char* hostKeyPath, char* username, char* password) {
     ssh_bind sshbind;
@@ -28,8 +48,9 @@ int secured_server(int port, char* hostKeyPath, char* username, char* password) 
     ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT_STR, port_str);
     ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_HOSTKEY, hostKeyPath);
 
-    if (ssh_bind_listen(sshbind) != SSH_OK) {
-        fprintf(stderr, "[ERROR] Échec écoute : %s\n", ssh_get_error(sshbind));
+    rc = ssh_bind_listen(sshbind);
+    if (rc < 0) {
+        fprintf(stderr, "[ERROR] Échec écoute sur le port : %s\n", ssh_get_error(sshbind));
         ssh_bind_free(sshbind);
         return EXIT_FAILURE;
     }
@@ -51,12 +72,26 @@ int secured_server(int port, char* hostKeyPath, char* username, char* password) 
             continue;
         }
 
-        printf("[DEBUG] Connexion acceptée\n");
+        printf("[DEBUG] Nouvelle connexion acceptée\n");
 
-        handle_client(session, username, password);
+        // Préparation des données pour le thread
+        client_data_t *client_data = malloc(sizeof(client_data_t));
+        client_data->session = session;
+        client_data->username = username;
+        client_data->password = password;
 
-        ssh_disconnect(session);
-        ssh_free(session);
+        // Création du thread
+        pthread_t thread;
+        if (pthread_create(&thread, NULL, handle_client_thread, client_data) != 0) {
+            fprintf(stderr, "[ERROR] Échec création thread\n");
+            free(client_data);
+            ssh_disconnect(session);
+            ssh_free(session);
+            continue;
+        }
+
+        // Détachement du thread
+        pthread_detach(thread);
     }
 
     ssh_bind_free(sshbind);
