@@ -1,6 +1,7 @@
 #include <libssh/server.h>
 #include <libssh/libssh.h>
 #define BUFFER_SIZE 1024
+#define FILE_PATH "/home/energetiq/Bureau/CODE/SAE302/fiches/"
 
 // Function to get configuration from file
 void getConf(const char *filename, int *port, char* serverName, char* isSecured, char* hostKeyPath, char* username, char* password);
@@ -18,3 +19,9 @@ void handle_session_input(ssh_channel channel);
 void send_message(ssh_channel channel);
 void handle_channel_requests(ssh_session session, ssh_channel channel);
 void handle_client(ssh_session session, char* username, char* password);
+
+
+// Engines functions
+
+int process(char* buffer);
+char* sendfile(const char* filename);

@@ -14,10 +14,47 @@ void handle_session_input(ssh_channel channel) {
 
     nbytes = ssh_channel_read(channel, buffer, sizeof(buffer), 0);
     if (nbytes > 0) {
-        printf("[DEBUG] Reçu: %.*s\n", nbytes, buffer);
+        buffer[nbytes] = '\0'; // Ajouter le caractère de fin de chaîne
+        printf("[DEBUG] Reçu: %s\n", buffer);
 
-        ssh_channel_write(channel, "ACK\n", 5); // Echo
-        
+        // Nettoyer le nom du fichier reçu
+        buffer[strcspn(buffer, "\r\n")] = 0; // Supprimer les caractères de nouvelle ligne
+        printf("Received filename: '%s'\n", buffer);
+
+        // Construire le chemin complet du fichier
+        char full_path[BUFFER_SIZE];
+        snprintf(full_path, sizeof(full_path), "%s%s", FILE_PATH, buffer);
+
+        // Vérifier si le fichier existe
+        FILE *file = fopen(full_path, "r");
+        if (file != NULL) {
+            fclose(file);
+
+            char* file_content = sendfile(buffer);
+            if (file_content != NULL) {
+                size_t total_sent = 0;
+                size_t file_size = strlen(file_content);
+                printf("[DEBUG] File size: %ld\n", file_size);
+                while (total_sent < file_size) {
+                    nbytes = ssh_channel_write(channel, file_content + total_sent, file_size - total_sent);
+                    if (nbytes < 0) {
+                        fprintf(stderr, "[ERROR] Échec envoi contenu fichier\n");
+                        free(file_content);
+                        return;
+                    }
+                    total_sent += nbytes;
+                }
+                free(file_content);
+
+                // Envoyer l'ACK après l'envoi complet du fichier
+                ssh_channel_write(channel, "ACK\n", 4);
+                printf("[DEBUG] ACK sent\n");
+            } else {
+                ssh_channel_write(channel, "ERROR: File not found\n", 22);
+            }
+        } else {
+            ssh_channel_write(channel, "ERROR: File not found\n", 22);
+        }
     }
 }
 
