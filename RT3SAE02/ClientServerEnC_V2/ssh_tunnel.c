@@ -8,6 +8,32 @@
 
 
 
+void send_file_content(ssh_channel channel, const char* filename) {
+    char* file_content = sendfile(filename);
+    if (file_content != NULL) {
+        size_t total_sent = 0;
+        size_t file_size = strlen(file_content);
+        printf("[DEBUG] File size: %ld\n", file_size);
+        while (total_sent < file_size) {
+            int nbytes = ssh_channel_write(channel, file_content + total_sent, file_size - total_sent);
+            if (nbytes < 0) {
+                fprintf(stderr, "[ERROR] Échec envoi contenu fichier\n");
+                free(file_content);
+                return;
+            }
+            total_sent += nbytes;
+        }
+        free(file_content);
+
+        // Envoyer l'ACK après l'envoi complet du fichier
+        ssh_channel_write(channel, "\nACK\n", 4);
+        printf("[DEBUG] ACK sent\n");
+    } else {
+        ssh_channel_write(channel, "ERROR: File not found\n", 22);
+    }
+}
+
+
 void handle_session_input(ssh_channel channel) {
     char buffer[BUFFER_SIZE];
     int nbytes;
@@ -29,29 +55,7 @@ void handle_session_input(ssh_channel channel) {
         FILE *file = fopen(full_path, "r");
         if (file != NULL) {
             fclose(file);
-
-            char* file_content = sendfile(buffer);
-            if (file_content != NULL) {
-                size_t total_sent = 0;
-                size_t file_size = strlen(file_content);
-                printf("[DEBUG] File size: %ld\n", file_size);
-                while (total_sent < file_size) {
-                    nbytes = ssh_channel_write(channel, file_content + total_sent, file_size - total_sent);
-                    if (nbytes < 0) {
-                        fprintf(stderr, "[ERROR] Échec envoi contenu fichier\n");
-                        free(file_content);
-                        return;
-                    }
-                    total_sent += nbytes;
-                }
-                free(file_content);
-
-                // Envoyer l'ACK après l'envoi complet du fichier
-                ssh_channel_write(channel, "ACK\n", 4);
-                printf("[DEBUG] ACK sent\n");
-            } else {
-                ssh_channel_write(channel, "ERROR: File not found\n", 22);
-            }
+            send_file_content(channel, buffer);
         } else {
             ssh_channel_write(channel, "ERROR: File not found\n", 22);
         }
@@ -59,10 +63,14 @@ void handle_session_input(ssh_channel channel) {
 }
 
 void send_message(ssh_channel channel) {
-    const char *message = "Bienvenue sur le canal SSH !\nEntrez vos commandes:\n";
+    const char *message = "Communication sécurisé en cours...\nVeuillez choisir un fichier à télécharger\nFichiers disponibles :\n- RT1FA.csv\n- RT1FI.csv\n- RT2FA.csv\n- RT2FI.csv\n";
+    
+
     if (ssh_channel_write(channel, message, strlen(message)) < 0) {
         fprintf(stderr, "[ERROR] Échec envoi message\n");
     }
+
+    
 }
 
 void handle_channel_requests(ssh_session session, ssh_channel channel) {
