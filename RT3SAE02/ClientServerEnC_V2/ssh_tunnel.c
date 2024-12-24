@@ -15,7 +15,9 @@ void handle_session_input(ssh_channel channel) {
     nbytes = ssh_channel_read(channel, buffer, sizeof(buffer), 0);
     if (nbytes > 0) {
         printf("[DEBUG] Reçu: %.*s\n", nbytes, buffer);
-        ssh_channel_write(channel, buffer, nbytes); // Echo
+
+        ssh_channel_write(channel, "ACK\n", 5); // Echo
+        
     }
 }
 
@@ -41,7 +43,7 @@ void handle_channel_requests(ssh_session session, ssh_channel channel) {
         }
     }
 }
-void handle_client(ssh_session session) {
+void handle_client(ssh_session session, char* username, char* password) {
     ssh_message message;
     ssh_channel channel = NULL;
     int authenticated = 0;
@@ -54,8 +56,8 @@ void handle_client(ssh_session session) {
     while (!authenticated && (message = ssh_message_get(session)) != NULL) {
         if (ssh_message_type(message) == SSH_REQUEST_AUTH &&
             ssh_message_subtype(message) == SSH_AUTH_METHOD_PASSWORD) {
-            if (strcmp(ssh_message_auth_user(message), USERNAME) == 0 &&
-                strcmp(ssh_message_auth_password(message), PASSWORD) == 0) {
+            if (strcmp(ssh_message_auth_user(message), username) == 0 &&
+                strcmp(ssh_message_auth_password(message), password) == 0) {
                 authenticated = 1;
                 ssh_message_auth_reply_success(message, 0);
                 printf("[DEBUG] Authentification réussie\n");

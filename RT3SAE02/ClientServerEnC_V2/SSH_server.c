@@ -6,12 +6,11 @@
 #include <poll.h>
 #include "server.h"
 
-
-
-int main() {
+int secured_server(int port, char* hostKeyPath, char* username, char* password) {
     ssh_bind sshbind;
     ssh_session session;
     int rc;
+    char port_str[7];
 
     sshbind = ssh_bind_new();
     if (sshbind == NULL) {
@@ -19,9 +18,15 @@ int main() {
         return EXIT_FAILURE;
     }
 
+    printf("[DEBUG] Initialisation serveur SSH\n");
+    printf("[DEBUG] Port : %d\n", port);
+
+    snprintf(port_str, sizeof(port_str), "%d", port);
+    printf("[DEBUG] Port : %s\n", port_str);
+
     ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDADDR, "0.0.0.0");
-    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT_STR, PORT);
-    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_HOSTKEY, HOST_KEY_PATH);
+    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT_STR, port_str);
+    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_HOSTKEY, hostKeyPath);
 
     if (ssh_bind_listen(sshbind) != SSH_OK) {
         fprintf(stderr, "[ERROR] Échec écoute : %s\n", ssh_get_error(sshbind));
@@ -29,7 +34,7 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    printf("[DEBUG] Serveur SSH démarré sur le port %s\n", PORT);
+    printf("[DEBUG] Serveur SSH démarré sur le port %d\n", port);
 
     while (1) {
         session = ssh_new();
@@ -40,14 +45,16 @@ int main() {
 
         rc = ssh_bind_accept(sshbind, session);
         if (rc != SSH_OK) {
-            fprintf(stderr, "[ERROR] Échec acceptation connexion : %s\n",
+            fprintf(stderr, "[ERROR] Échec acceptation connexion : %s\n", 
                     ssh_get_error(sshbind));
             ssh_free(session);
             continue;
         }
 
         printf("[DEBUG] Connexion acceptée\n");
-        handle_client(session);
+
+        handle_client(session, username, password);
+
         ssh_disconnect(session);
         ssh_free(session);
     }

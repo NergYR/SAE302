@@ -8,7 +8,7 @@ INSTALLDIR = $(HOME)/bin
 
 SRC_DIR_V2 = RT3SAE02/ClientServerEnC_V2
 
-V2_SERVER_SRC = $(SRC_DIR_V2)/server.c $(SRC_DIR_V2)/unSecured_server.c
+V2_SERVER_SRC = $(SRC_DIR_V2)/server.c $(SRC_DIR_V2)/unSecured_server.c $(SRC_DIR_V2)/SSH_server.c $(SRC_DIR_V2)/ssh_tunnel.c
 #V2_CLIENT_SRC = $(SRC_DIR_V2)/SSH_Client.c
 
 V2_SERVER_OBJ = $(V2_SERVER_SRC:.c=.o)

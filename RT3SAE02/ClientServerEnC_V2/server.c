@@ -10,7 +10,7 @@
 
 
 // Function to get configuration from file 
-void getServerPort(const char *filename, int *port, char* serverName, char* isSecured) {
+void getConf(const char *filename, int *port, char* serverName, char* isSecured, char* username, char* password, char* ssh_key) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         perror("Unable to open file");
@@ -25,6 +25,12 @@ void getServerPort(const char *filename, int *port, char* serverName, char* isSe
             sscanf(line, "Servername = \"%[^\"]\"", serverName);
         } else if (strncmp(line, "IsSecured", 9) == 0) {
             sscanf(line, "IsSecured = \"%[^\"]\"", isSecured);
+        } else if (strncmp(line, "Username", 8) == 0) {
+            sscanf(line, "Username = \"%[^\"]\"", username);
+        } else if (strncmp(line, "Password", 8) == 0) {
+            sscanf(line, "Password = \"%[^\"]\"", password);
+        } else if (strncmp(line, "ssh_key", 7) == 0) {
+            sscanf(line, "ssh_key = \"%[^\"]\"", ssh_key);
         }
     }
 
@@ -44,14 +50,18 @@ int main( int argc, char *argv[] )
     int port;
     char serverName[256];
     char isSecured[10];
-    getServerPort("/home/energetiq/Bureau/CODE/SAE302/config.conf", &port, serverName, isSecured);
+    char username[256];
+    char password[256];
+    char ssh_key[256];
+    getConf("/home/energetiq/Bureau/CODE/SAE302/config.conf", &port, serverName, isSecured, username, password, ssh_key);
     printf("Server port: %d\n", port);
     printf("Server name: %s\n", serverName);
     printf("Is secured: %s\n", isSecured);
+    printf("Username: %s\n", username);
 
     if(strncmp(isSecured, "true", 4)  == 0) {
         printf("Secured server\n");
-        //secured_server(port);
+        secured_server(port, ssh_key, username, password);
     } else {
         printf("Unsecured server\n");
         unSecured_server(port);
