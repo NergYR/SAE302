@@ -1,6 +1,7 @@
 {
     "files.associations": {
-        "gtk.h": "c"
+        "gtk.h": "c",
+        "server.h": "c"
     },
     "makefile.buildLog": "²"
 }
