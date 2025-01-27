@@ -1,10 +1,8 @@
-
 import java.util.*;
 
 public class Presence {
     
     private List<List<String>> list_student = null;
-    private Date date = null;
 
     public Presence(){
         this.list_student = new ArrayList<>();
