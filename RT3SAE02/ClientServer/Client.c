@@ -98,7 +98,7 @@ char* createModifiedCSV(Student* students, int nbStudents) {
     strcat(csv, "etudid;code_nip;etat;civilite_str;nom;nom_usuel;prenom;TP;presence\n");
 
     for (int i = 0; i < nbStudents; i++) {
-        char line[512];
+        char line[1024];  // Augmenter la taille du buffer pour éviter la troncature
         char* original = students[i].name;
         
         // Nettoyer la ligne
@@ -115,6 +115,12 @@ char* createModifiedCSV(Student* students, int nbStudents) {
         }
         cleaned_line[k] = '\0';
         
+        // Assurer que la ligne ne dépassera pas la taille du buffer
+        size_t max_len = sizeof(line) - strlen(students[i].presence) - 3; // -3 pour ";", "\n" et "\0"
+        if (strlen(cleaned_line) > max_len) {
+            cleaned_line[max_len] = '\0';
+        }
+        
         snprintf(line, sizeof(line), "%s;%s\n", cleaned_line, students[i].presence);
         strcat(csv, line);
     }
@@ -122,7 +128,8 @@ char* createModifiedCSV(Student* students, int nbStudents) {
     return csv;
 }
 
-int main(int argc, char *argv[]) {
+// Renommer la fonction main en client_main
+int client_main(int argc, char *argv[]) {
     int portno;
     int sockfd;
     char buffer[BUFFER_SIZE];
@@ -211,3 +218,10 @@ int main(int argc, char *argv[]) {
     close(sockfd);
     return 0;
 }
+
+// Ajouter une nouvelle fonction main qui appelle client_main
+#ifdef BUILD_CLIENT_MAIN
+int main(int argc, char *argv[]) {
+    return client_main(argc, argv);
+}
+#endif

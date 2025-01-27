@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <poll.h>
+#include <time.h>
 #include "server.h"
 
 
@@ -36,26 +37,88 @@ void send_file_content(ssh_channel channel, const char* filename) {
 
 void handle_session_input(ssh_channel channel) {
     char buffer[BUFFER_SIZE];
+    char complete_buffer[BUFFER_SIZE * 10] = {0};
     int nbytes;
 
     nbytes = ssh_channel_read(channel, buffer, sizeof(buffer), 0);
     if (nbytes > 0) {
-        buffer[nbytes] = '\0'; // Ajouter le caractère de fin de chaîne
+        buffer[nbytes] = '\0';
         printf("[DEBUG] Reçu: %s\n", buffer);
 
         // Nettoyer le nom du fichier reçu
-        buffer[strcspn(buffer, "\r\n")] = 0; // Supprimer les caractères de nouvelle ligne
+        buffer[strcspn(buffer, "\r\n")] = 0;
         printf("Received filename: '%s'\n", buffer);
 
         // Construire le chemin complet du fichier
-        char full_path[BUFFER_SIZE];
-        snprintf(full_path, sizeof(full_path), "%s%s", FILE_PATH, buffer);
+        char filepath[BUFFER_SIZE];
+        snprintf(filepath, sizeof(filepath), "%s%s", FILE_PATH, buffer);
 
-        // Vérifier si le fichier existe
-        FILE *file = fopen(full_path, "r");
+        // Envoyer le contenu du fichier
+        FILE *file = fopen(filepath, "r");
         if (file != NULL) {
+            while ((nbytes = fread(buffer, 1, sizeof(buffer) - 1, file)) > 0) {
+                ssh_channel_write(channel, buffer, nbytes);
+            }
             fclose(file);
-            send_file_content(channel, buffer);
+
+            // Envoyer un marqueur de fin de fichier explicite
+            const char* end_marker = "\nENDOFFILE\n";
+            ssh_channel_write(channel, end_marker, strlen(end_marker));
+
+            // Attendre la réception du fichier modifié
+            int total_received = 0;
+            memset(complete_buffer, 0, sizeof(complete_buffer));
+            
+            while ((nbytes = ssh_channel_read(channel, buffer, sizeof(buffer) - 1, 0)) > 0) {
+                buffer[nbytes] = '\0';
+                
+                if (strstr(buffer, "END_OF_FILE") != NULL) {
+                    strncat(complete_buffer + total_received, buffer, nbytes);
+                    char* end = strstr(complete_buffer, "\nEND_OF_FILE");
+                    if (end != NULL) {
+                        *end = '\0';
+                        break;
+                    }
+                }
+                
+                if (total_received + nbytes >= sizeof(complete_buffer)) {
+                    ssh_channel_write(channel, "Erreur: fichier trop grand\n", 27);
+                    return;
+                }
+                
+                memcpy(complete_buffer + total_received, buffer, nbytes);
+                total_received += nbytes;
+            }
+
+            if (total_received > 0) {
+                // Création du nom de fichier horodaté
+                time_t now = time(NULL);
+                struct tm *tm_info = localtime(&now);
+                char timestamp[20];
+                strftime(timestamp, 20, "%Y%m%d_%H%M%S", tm_info);
+                
+                char new_filepath[BUFFER_SIZE];
+                char *dot = strrchr(filepath, '.');
+                if (dot != NULL) {
+                    strncpy(new_filepath, filepath, dot - filepath);
+                    new_filepath[dot - filepath] = '\0';
+                    snprintf(new_filepath + strlen(new_filepath), BUFFER_SIZE - strlen(new_filepath), 
+                            "_presence_%s.csv", timestamp);
+                }
+
+                // Écriture du fichier modifié
+                FILE *newfile = fopen(new_filepath, "w");
+                if (newfile != NULL) {
+                    fprintf(newfile, "%s", complete_buffer);
+                    fclose(newfile);
+                    printf("[DEBUG] Fichier sauvegardé : %s\n", new_filepath);
+                    ssh_channel_write(channel, "Fichier d'appel sauvegardé avec succès.\n", 40);
+                } else {
+                    ssh_channel_write(channel, "Erreur lors de la sauvegarde du fichier\n", 39);
+                }
+            } else {
+                ssh_channel_write(channel, "Erreur lors de la réception du fichier\n", 39);
+            }
         } else {
             ssh_channel_write(channel, "ERROR: File not found\n", 22);
         }
@@ -101,8 +164,9 @@ void handle_client(ssh_session session, char* username, char* password) {
     while (!authenticated && (message = ssh_message_get(session)) != NULL) {
         if (ssh_message_type(message) == SSH_REQUEST_AUTH &&
             ssh_message_subtype(message) == SSH_AUTH_METHOD_PASSWORD) {
+            const char* auth_password = ssh_message_auth_password(message);
             if (strcmp(ssh_message_auth_user(message), username) == 0 &&
-                strcmp(ssh_message_auth_password(message), password) == 0) {
+                auth_password != NULL && strcmp(auth_password, password) == 0) {
                 authenticated = 1;
                 ssh_message_auth_reply_success(message, 0);
                 printf("[DEBUG] Authentification réussie\n");

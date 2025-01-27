@@ -9,29 +9,49 @@ INSTALLDIR = $(HOME)/bin
 SRC_DIR_V2 = RT3SAE02/ClientServer
 
 V2_SERVER_SRC = $(SRC_DIR_V2)/server.c $(SRC_DIR_V2)/unSecured_server.c $(SRC_DIR_V2)/SSH_server.c $(SRC_DIR_V2)/ssh_tunnel.c $(SRC_DIR_V2)/engine.c
-V2_CLIENT_SRC = $(SRC_DIR_V2)/Client.c $(SRC_DIR_V2)/client_back.c
+
+# Séparer les objets pour éviter les conflits
+V2_CLIENT_COMMON_SRC = $(SRC_DIR_V2)/client_back.c $(SRC_DIR_V2)/Client.c
+V2_SSH_CLIENT_SRC = $(SRC_DIR_V2)/SSH_client.c
 
 V2_SERVER_OBJ = $(V2_SERVER_SRC:.c=.o)
-V2_CLIENT_OBJ = $(V2_CLIENT_SRC:.c=.o)
+V2_CLIENT_COMMON_OBJ = $(V2_CLIENT_COMMON_SRC:.c=.o)
+V2_SSH_CLIENT_OBJ = $(V2_SSH_CLIENT_SRC:.c=.o)
 
 V2_SERVER_EXEC = $(SRC_DIR_V2)/server
 V2_CLIENT_EXEC = $(SRC_DIR_V2)/Client
+V2_SSH_CLIENT_EXEC = $(SRC_DIR_V2)/SSH_client
 
-all: $(V2_SERVER_EXEC) $(V2_CLIENT_EXEC)
+# Conserver les fichiers objets jusqu'à la fin de la compilation
+.PRECIOUS: $(SRC_DIR_V2)/%.o
+
+# Ajout des flags de compilation conditionnelle
+CLIENT_CFLAGS = $(CFLAGS) -DBUILD_CLIENT_MAIN
+SSH_CLIENT_CFLAGS = $(CFLAGS)
+
+all: $(V2_SERVER_EXEC) $(V2_CLIENT_EXEC) $(V2_SSH_CLIENT_EXEC)
 
 $(V2_SERVER_EXEC): $(V2_SERVER_OBJ)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIB)
-	$(RM) $(SRC_DIR_V2)/*.o
 
-$(V2_CLIENT_EXEC): $(V2_CLIENT_OBJ)
-	$(CC) $(CFLAGS) -o $@ $^ $(LIB)
-	$(RM) $(SRC_DIR_V2)/*.o
+$(V2_CLIENT_EXEC): $(V2_CLIENT_COMMON_SRC:.c=.client.o)
+	$(CC) $(CLIENT_CFLAGS) -o $@ $^ $(LIB)
 
+$(V2_SSH_CLIENT_EXEC): $(V2_SSH_CLIENT_SRC:.c=.o) $(V2_CLIENT_COMMON_SRC:.c=.ssh.o)
+	$(CC) $(SSH_CLIENT_CFLAGS) -o $@ $^ $(LIB)
 
+# Règle de compilation pour les fichiers objets
 $(SRC_DIR_V2)/%.o: $(SRC_DIR_V2)/%.c
-	$(CC) $(INC) -c $< -o $@
+	$(CC) $(CFLAGS) $(INC) -c $< -o $@
 
+%.client.o: %.c
+	$(CC) $(CLIENT_CFLAGS) $(INC) -c $< -o $@
+
+%.ssh.o: %.c
+	$(CC) $(SSH_CLIENT_CFLAGS) $(INC) -c $< -o $@
+
+# Nettoyage à la fin seulement
 clean:
-	$(RM) $(SRC_DIR_V2)/*.o $(V2_SERVER_EXEC) $(V2_CLIENT_EXEC) *~
+	$(RM) $(SRC_DIR_V2)/*.o *~
 
 .PHONY: all clean

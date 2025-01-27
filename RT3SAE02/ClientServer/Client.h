@@ -8,7 +8,8 @@ typedef struct {
     char presence[20];
 } Student;
 
-void processAttendance(char* buffer, Student* students, int* nbStudents);
-char* createModifiedCSV(Student* students, int nbStudents);
+extern void processAttendance(char* buffer, Student* students, int* nbStudents);
+extern char* createModifiedCSV(Student* students, int nbStudents);
+extern int client_main(int argc, char *argv[]);
 
 #endif
