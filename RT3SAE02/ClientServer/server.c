@@ -53,7 +53,7 @@ int main( int argc, char *argv[] )
     char username[256];
     char password[256];
     char ssh_key[256];
-    getConf("/home/kali/CODE/SAEDEV/SAE302/config.conf", &port, serverName, isSecured, username, password, ssh_key);
+    getConf("config.conf", &port, serverName, isSecured, username, password, ssh_key);
     printf("Server port: %d\n", port);
     printf("Server name: %s\n", serverName);
     printf("Is secured: %s\n", isSecured);
