@@ -24,8 +24,17 @@ public class ClientJava {
     }
 
     public void Run(){
+        System.out.println(" 1");
         CommServ cs = new CommServ(this.addr);
-        
+        System.out.println(" 2");
+        cs.GetInfo();
+        System.out.println(" 3");
+        cs.SendInfo("RT2FA.csv");
+        System.out.println(" 4");
+        cs.GetInfo();
+        System.out.println(" 5");
+        cs.Disconnect();
+        System.out.println(" 6");
     }
 
     public void RunSSH(){

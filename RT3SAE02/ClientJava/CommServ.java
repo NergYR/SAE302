@@ -26,8 +26,10 @@ public class CommServ {
     public void Connect(){
         try {
             this.socket = new Socket(this.addr,this.port);
+            //this.socket.connect(new InetSocketAddress(this.addr, this.port), this.port);
             this.input = new DataInputStream(this.socket.getInputStream());
             this.output = new DataOutputStream(this.socket.getOutputStream());
+            //System.out.print(this.input.readUTF());
         }
         catch (Exception e) {
             System.out.print(e.getMessage());
@@ -47,10 +49,25 @@ public class CommServ {
     }
 
     public void GetInfo(){
-        
+        try {
+            String line = "";
+            while ((line = this.input.readLine()).length()>=1){
+                System.out.println(line);
+            } /* */
+        } 
+        catch (Exception e) {
+        }
+    }
+
+    public void SendInfo(String m){
+        try {
+            this.output.writeUTF(m);
+        } catch (Exception e) {
+        }
     }
 
     public List<List<String>> GetFile(){
+        //transforme un string en liste de liste
         String line = "";
         String[] temp = line.split("\n");
         List<String> lines = new ArrayList<>();
@@ -70,6 +87,7 @@ public class CommServ {
     }
 
     public void SendFile(List<List<String>> file){
+        //transforme une liste de liste en string
         String str_file = "";
         List<String> line = new ArrayList<>();
         for (int i=0;i<file.size();i++){
