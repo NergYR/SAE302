@@ -29,7 +29,7 @@ V2_SSH_CLIENT_EXEC = $(SRC_DIR_V2)/SSH_client
 CLIENT_CFLAGS = $(CFLAGS) -DBUILD_CLIENT_MAIN
 SSH_CLIENT_CFLAGS = $(CFLAGS)
 
-all: $(V2_SERVER_EXEC) $(V2_CLIENT_EXEC) $(V2_SSH_CLIENT_EXEC)
+all: $(V2_SERVER_EXEC) $(V2_CLIENT_EXEC) $(V2_SSH_CLIENT_EXEC) clean
 
 $(V2_SERVER_EXEC): $(V2_SERVER_OBJ)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIB)
@@ -41,7 +41,7 @@ $(V2_SSH_CLIENT_EXEC): $(V2_SSH_CLIENT_SRC:.c=.o) $(V2_CLIENT_COMMON_SRC:.c=.ssh
 	$(CC) $(SSH_CLIENT_CFLAGS) -o $@ $^ $(LIB)
 
 # Règle de compilation pour les fichiers objets
-$(SRC_DIR_V2)/%.o: $(SRC_DIR_V2)/%.c
+$(SRC_DIR_V2)/%.o: $(SRC_DIR_V2)/%.c $(SRC_DIR_V2)/%.h
 	$(CC) $(CFLAGS) $(INC) -c $< -o $@
 
 %.client.o: %.c
@@ -52,6 +52,16 @@ $(SRC_DIR_V2)/%.o: $(SRC_DIR_V2)/%.c
 
 # Nettoyage à la fin seulement
 clean:
-	$(RM) $(SRC_DIR_V2)/*.o *~
+	$(RM) $(SRC_DIR_V2)/*.o 
+
+install: all
+	@echo "Installation des programmes..."
+	sudo install -m 755 $(V2_SERVER_EXEC) /usr/bin/server
+	sudo install -m 755 $(V2_CLIENT_EXEC) /usr/bin/Client
+	sudo install -m 755 $(V2_SSH_CLIENT_EXEC) /usr/bin/SSH_client
+	@echo "Installation du fichier de configuration..."
+	sudo mkdir -p /etc/ServerAppel/server
+	sudo install -m 644 config.conf /etc/ServerAppel/server/server.conf
+	@echo "Installation terminée"
 
 .PHONY: all clean
