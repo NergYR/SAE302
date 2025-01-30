@@ -50,16 +50,18 @@ public class CommServ {
         }
     }
 
-    public void GetInfo(){
+    public List<String> GetInfo(){
+        List<String> result = new ArrayList<>();
         try {
             String line = "";
             while ((line = this.input.readLine()).length()>=1){
-                System.out.println(line);
+                result.add(line);
             } 
            //System.out.print(this.input.readLine());
         } 
         catch (Exception e) {
         }
+        return result;
     }
 
     public void SendInfo(String m){
@@ -76,23 +78,20 @@ public class CommServ {
     public List<List<String>> GetFile(){
         //transforme un string en liste de liste
         String line = "";
-        try {
-            line = this.input.read();
-        } catch (Exception e) {
-        }
-        String[] temp = line.split("\n");
-        List<String> lines = new ArrayList<>();
-        for (int i = 0; i<temp.length;i++) {
-            lines.add(temp[i]);
-        }
+        String[] temp = null;
         List<List<String>> csv_tab = new ArrayList<>();
-        for(int i = 0; i<lines.size();i++){
-            temp = lines.get(i).split(";");
-            List<String>temp_list = new ArrayList<>();
-            for(int j=0;j<temp.length;j++){
-                temp_list.add(temp[j]);
+        try {
+            List<String> lines = this.GetInfo();
+            for(int i = 0; i<lines.size();i++){
+                temp = line.split(";");
+                List<String>temp_list = new ArrayList<>();
+                for(int j=0;j<temp.length;j++){
+                    temp_list.add(temp[j]);
+                }
+                csv_tab.add(temp_list);
             }
-            csv_tab.add(temp_list);
+        } 
+        catch (Exception e) {
         }
         return csv_tab;
     }
