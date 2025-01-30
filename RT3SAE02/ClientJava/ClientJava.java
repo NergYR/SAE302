@@ -29,7 +29,7 @@ public class ClientJava {
         System.out.println(" 2");
         cs.GetInfo();
         System.out.println(" 3");
-        cs.SendInfo("RT2FA.csv");
+        cs.SendInfo("RT1FI.csv\n");
         System.out.println(" 4");
         cs.GetInfo();
         System.out.println(" 5");

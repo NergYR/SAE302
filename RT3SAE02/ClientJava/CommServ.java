@@ -1,7 +1,9 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class CommServ {
@@ -53,7 +55,8 @@ public class CommServ {
             String line = "";
             while ((line = this.input.readLine()).length()>=1){
                 System.out.println(line);
-            } /* */
+            } 
+           //System.out.print(this.input.readLine());
         } 
         catch (Exception e) {
         }
@@ -61,7 +64,11 @@ public class CommServ {
 
     public void SendInfo(String m){
         try {
-            this.output.writeUTF(m);
+            //this.output.write(m.getBytes());
+            OutputStreamWriter writer = new OutputStreamWriter(this.output, StandardCharsets.UTF_8);
+            writer.write(m + "\n"); // Ajoute un \n pour faciliter la lecture en C
+            writer.flush(); // Envoi immédiat
+
         } catch (Exception e) {
         }
     }
@@ -69,6 +76,10 @@ public class CommServ {
     public List<List<String>> GetFile(){
         //transforme un string en liste de liste
         String line = "";
+        try {
+            line = this.input.read();
+        } catch (Exception e) {
+        }
         String[] temp = line.split("\n");
         List<String> lines = new ArrayList<>();
         for (int i = 0; i<temp.length;i++) {
