@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:gravity="center">
+
+
+        <TextView
+            android:id="@+id/message_pour_authentification"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:text="Veuillez vous authentifier auprès du serveur"
+            android:textAlignment="center"
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/nom_utilisateur"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nom d'utilisateur"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/pswd_utilisateur"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Mot de passe"
+            android:inputType="textPassword" />
+
+        <EditText
+            android:id="@+id/server_ip_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Adresse IP du serveur"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/server_port_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Port du serveur"
+            android:inputType="number"
+            android:layout_marginTop="10dp" />
+
+        <Button
+            android:id="@+id/submit_button_authentification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:backgroundTint="@color/bouton_validation_authentification"
+            android:text="Se connecter" />
+
+        <Button
+            android:id="@+id/bouton_retour_accueil"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:backgroundTint="@color/bouton_retour_accueil"
+            android:text="Retour" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
