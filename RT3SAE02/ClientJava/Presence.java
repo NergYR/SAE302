@@ -17,17 +17,17 @@ public class Presence {
         for (int i = 1; i < this.list_student.size(); i++) {
             if(i<pres.size()){
                 if(pres.get(i-1)==1){
-                    list_student.get(i).add(";présent");
+                    list_student.get(i).add("présent");
                 }
                 else if(pres.get(i-1)==0){
-                    list_student.get(i).add(";absent");
+                    list_student.get(i).add("absent");
                 }
                 else{
-                    list_student.get(i).add(";NaN");
+                    list_student.get(i).add("NaN");
                 }
             }
             else{
-                list_student.get(i).add(";NaN");
+                list_student.get(i).add("NaN");
             }
         }
         System.out.println(this.list_student);

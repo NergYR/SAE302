@@ -101,7 +101,7 @@ public class CommServ {
         for (int i=0;i<file.size();i++){
             line = file.get(i);
             for (int j=0;j<line.size();j++){
-                str_file = str_file+file.get(j);
+                str_file = str_file+line.get(j)+";";
             }
             str_file += "\n";
         }
