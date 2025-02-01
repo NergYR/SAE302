@@ -56,6 +56,7 @@ clean:
 
 install: all
 	@echo "Installation des programmes..."
+	sudo apt update && sudo apt install libssh-dev
 	sudo install -m 755 $(V2_SERVER_EXEC) /usr/bin/server
 	sudo install -m 755 $(V2_CLIENT_EXEC) /usr/bin/Client
 	sudo install -m 755 $(V2_SSH_CLIENT_EXEC) /usr/bin/SSH_client
