@@ -47,7 +47,6 @@ public class Presence {
                 presence.add(0);
             }
         }
-        System.out.print(presence);
         return presence;
     }
 }
