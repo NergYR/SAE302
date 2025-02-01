@@ -1,7 +1,4 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -13,6 +10,7 @@ public class CommServ {
     private Socket socket = null;
     private DataInputStream input = null;
     private DataOutputStream output = null;
+    private BufferedReader in = null;
 
     public CommServ(String addr, int port){
         this.port = port;
@@ -31,7 +29,7 @@ public class CommServ {
             //this.socket.connect(new InetSocketAddress(this.addr, this.port), this.port);
             this.input = new DataInputStream(this.socket.getInputStream());
             this.output = new DataOutputStream(this.socket.getOutputStream());
-            //System.out.print(this.input.readUTF());
+            in = new  BufferedReader(new InputStreamReader(this.socket.getInputStream()));
         }
         catch (Exception e) {
             System.out.print(e.getMessage());
@@ -53,11 +51,11 @@ public class CommServ {
     public List<String> GetInfo(){
         List<String> result = new ArrayList<>();
         try {
-            String line = "";
-            while ((line = this.input.readLine()).length()>=1){
+            String line = ";";
+            while (!line.trim().isEmpty() && line!=null){
+                line = in.readLine();
                 result.add(line);
-            } 
-           //System.out.print(this.input.readLine());
+            }
         } 
         catch (Exception e) {
         }
@@ -82,8 +80,8 @@ public class CommServ {
         List<List<String>> csv_tab = new ArrayList<>();
         try {
             List<String> lines = this.GetInfo();
-            for(int i = 0; i<lines.size();i++){
-                temp = line.split(";");
+            for(int i = 0; i<lines.size()-1;i++){
+                temp = lines.get(i).split(";");
                 List<String>temp_list = new ArrayList<>();
                 for(int j=0;j<temp.length;j++){
                     temp_list.add(temp[j]);
@@ -107,5 +105,6 @@ public class CommServ {
             }
             str_file += "\n";
         }
+        SendInfo(str_file);
     }
 }

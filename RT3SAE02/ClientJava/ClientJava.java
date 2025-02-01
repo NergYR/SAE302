@@ -1,4 +1,5 @@
 
+import java.util.*;
 
 public class ClientJava {
 
@@ -24,17 +25,16 @@ public class ClientJava {
     }
 
     public void Run(){
-        System.out.println(" 1");
         CommServ cs = new CommServ(this.addr);
-        System.out.println(" 2");
-        cs.GetInfo();
-        System.out.println(" 3");
-        cs.SendInfo("RT1FI.csv\n");
-        System.out.println(" 4");
-        cs.GetInfo();
-        System.out.println(" 5");
-        cs.Disconnect();
+        List<String> name = cs.GetInfo();
+        System.out.println(name);
+        cs.SendInfo("RT1FA.csv\n");
+        List<List<String>> file = cs.GetFile();
+        Presence p = new Presence(file);
+        p.Console_MarkPresenceStudent(p.Appel());
         System.out.println(" 6");
+        cs.SendFile(p.getList());
+        cs.Disconnect();
     }
 
     public void RunSSH(){
