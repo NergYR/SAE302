@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class Etudiant implements Serializable {
     private String nom;
     private String prenom;
-    private int presence; // 0 = absent, 1 = présent
+    private int presence;
 
     public Etudiant(String nom, String prenom) {
         this.nom = nom;

@@ -55,7 +55,9 @@ public class ListeEtudiantsActivity extends Activity {
         }
 
         StringBuilder result = new StringBuilder("Absents :\n");
-        for (Etudiant etudiant : listeEtudiants) {
+        // Commence à 1 pour ignorer la première ligne (index 0)
+        for (int i = 1; i < listeEtudiants.size(); i++) {
+            Etudiant etudiant = listeEtudiants.get(i);
             if (etudiant.getPresence() == 0) { // Affiche uniquement les absents
                 result.append(etudiant.getNom()).append(" ").append(etudiant.getPrenom()).append("\n");
             }
@@ -70,5 +72,6 @@ public class ListeEtudiantsActivity extends Activity {
             Toast.makeText(this, result.toString(), Toast.LENGTH_LONG).show();
         }
     }
+
 
 }
