@@ -23,7 +23,11 @@ public class MainActivity extends AppCompatActivity {
         Button buttonSecure = findViewById(R.id.bouton_connexion_secure);
         Button buttonNonSecure = findViewById(R.id.bouton_connexion_non_secure);
 
-        // Redirection vers l'authentification sécurisée
+        // Désactiver le bouton
+        buttonSecure.setEnabled(false);
+        buttonSecure.setAlpha(0.5f); // Facultatif : changer l'apparence pour indiquer qu'il est inactif
+
+        // Redirection vers l'authentification sécurisée (le clic ne fonctionne plus car le bouton est désactivé)
         buttonSecure.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
