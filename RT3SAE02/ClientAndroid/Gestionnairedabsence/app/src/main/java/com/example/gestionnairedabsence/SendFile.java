@@ -1,29 +1,35 @@
 package com.example.gestionnairedabsence;
 
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.List;
 
 public class SendFile {
 
-    public void sendFile(List<String[]> lignes, List<Etudiant> etudiants) {
-        // Parcourir chaque ligne existante
-        for (String[] ligne : lignes) {
-            // Chaque ligne contient des données, par exemple : ligne[0] = nom, ligne[1] = prénom
-            String nom = ligne[0];
-            String prenom = ligne[1];
+    public void sendFile(String serverIp, int serverPort, List<Etudiant> etudiants) {
+        new Thread(() -> {
+            try (Socket socket = new Socket(serverIp, serverPort);
+                 OutputStream os = socket.getOutputStream();
+                 PrintWriter writer = new PrintWriter(os, true)) {
 
-            // Comparer avec les étudiants pour mettre à jour la colonne "présence"
-            for (Etudiant etudiant : etudiants) {
-                if (etudiant.getNom().equals(nom) && etudiant.getPrenom().equals(prenom)) {
-                    // Ajouter ou mettre à jour la présence dans la ligne
-                    ligne[2] = String.valueOf(etudiant.getPresence());
+                // Construire les données à envoyer
+                StringBuilder data = new StringBuilder();
+                for (Etudiant etudiant : etudiants) {
+                    data.append(etudiant.getNom()).append(";")
+                            .append(etudiant.getPrenom()).append(";")
+                            .append(etudiant.getPresence()).append("\n");
                 }
-            }
-        }
 
-        // Simuler l'envoi en affichant les données mises à jour
-        System.out.println("Contenu des lignes mises à jour :");
-        for (String[] ligne : lignes) {
-            System.out.println(String.join(";", ligne));
-        }
+                // Envoyer les données au serveur
+                writer.println(data.toString());
+                System.out.println("Données envoyées au serveur :");
+                System.out.println(data.toString());
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("Erreur lors de l'envoi des données : " + e.getMessage());
+            }
+        }).start();
     }
 }

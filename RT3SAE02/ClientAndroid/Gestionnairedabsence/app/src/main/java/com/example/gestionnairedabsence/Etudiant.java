@@ -3,8 +3,8 @@ package com.example.gestionnairedabsence;
 import java.io.Serializable;
 
 public class Etudiant implements Serializable {
-    private String nom;
-    private String prenom;
+    private final String nom;
+    private final String prenom;
     private int presence; // 0 = absent, 1 = présent
 
     public Etudiant(String nom, String prenom) {

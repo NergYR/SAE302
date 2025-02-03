@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.gestionnairedabsence.SendFile;
+import com.example.gestionnairedabsence.Etudiant;
+
+
 
 public class ListeEtudiantsActivity extends Activity {
     private static final String TAG = "ListeEtudiantsActivity";
@@ -56,27 +59,25 @@ public class ListeEtudiantsActivity extends Activity {
             return;
         }
 
-        // Récupérer la liste des absents
-        List<Etudiant> absents = new ArrayList<>();
-        for (int i = 1; i < listeEtudiants.size(); i++) { // Ignorer la première ligne
-            Etudiant etudiant = listeEtudiants.get(i);
-            if (etudiant.getPresence() == 0) {
-                absents.add(etudiant);
-            }
+        // Récupérer les informations du serveur depuis l'Intent
+        String serverIp = getIntent().getStringExtra("serverIp");
+        int serverPort = getIntent().getIntExtra("serverPort", -1);
+
+        if (serverIp == null || serverPort == -1) {
+            Toast.makeText(this, "Adresse ou port du serveur non configurés.", Toast.LENGTH_LONG).show();
+            return;
         }
 
-        if (absents.isEmpty()) {
-            Toast.makeText(this, "Tous les étudiants sont présents.", Toast.LENGTH_SHORT).show();
-        } else {
-            // Appeler SendFile pour envoyer les données des absents
-            List<String[]> lignes = new ArrayList<>();
-            SendFile sendFile = new SendFile();
-            sendFile.sendFile(lignes, listeEtudiants);
+        // Appeler SendFile pour envoyer tous les étudiants (présents et absents)
+        SendFile sendFile = new SendFile();
+        sendFile.sendFile(serverIp, serverPort, listeEtudiants);
 
-            Toast.makeText(this, "Liste des présences mise à jour.", Toast.LENGTH_LONG).show();
-        }
+        Toast.makeText(this, "Liste des présences envoyée au serveur.", Toast.LENGTH_LONG).show();
+
+        // Revenir à la page principale (MainActivity)
+        new android.os.Handler().postDelayed(() -> {
+            finish(); // Termine l’activité actuelle
+        }, 2000); // Ajoute un délai de 2 secondes pour l’animation
     }
-
-
 
 }
