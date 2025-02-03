@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/fond_page_chargement"
+    android:padding="16dp">
+
+    <!-- Premier LinearLayout (en haut, horizontal avec 2 TextViews) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:id="@+id/texte_prof_encadrant"
+            android:textColor="@color/texte_page_chargement"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="M. HUOT"
+            android:gravity="center"
+            android:textSize="10sp"
+            android:paddingTop="10sp"/>
+
+        <TextView
+            android:id="@+id/texte_nom_sae"
+            android:textColor="@color/texte_page_chargement"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="RT3SA02A"
+            android:gravity="center"
+            android:textSize="10sp"
+            android:paddingTop="10sp"/>
+    </LinearLayout>
+
+    <!-- ajout du logo au centre -->
+
+    <ImageView
+        android:layout_width="251dp"
+        android:layout_height="177dp"
+        android:layout_gravity="center"
+        android:src="@drawable/logo_uvsq_iut"></ImageView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/bouton_connexion_secure"
+            android:layout_width="248dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="@color/Bouton_connexion_page_accueil"
+            android:text="Connexion sécurisée" />
+
+        <Button
+            android:id="@+id/bouton_connexion_non_secure"
+            android:layout_width="246dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/Bouton_connexion_page_accueil"
+            android:text="Connexion non sécurisée" />
+
+    </LinearLayout>
+
+
+
+    <!-- Troisième LinearLayout (au dessus du deuxième, horizontal avec 2 TextViews) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="7dp">
+
+        <TextView
+            android:id="@+id/texte_formation"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="BUT2-RT-FA"
+            android:textColor="@color/texte_page_chargement"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/texte_annee_scolaire"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="2024-25"
+            android:textColor="@color/texte_page_chargement"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <!-- Deuxième LinearLayout (en bas, horizontal avec 4 TextViews) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="7dp">
+
+        <TextView
+            android:id="@+id/texte_nom_eleve_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="BULTE Clément"
+            android:textColor="@color/texte_page_chargement"
+            android:textSize="10sp"
+            android:paddingBottom="10sp"/>
+
+        <TextView
+            android:id="@+id/texte_nom_eleve_2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:paddingBottom="10sp"
+            android:text="CLEMENCE Mathéo"
+            android:textColor="@color/texte_page_chargement"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/texte_nom_eleve_3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="HUGUET Théo"
+            android:textColor="@color/texte_page_chargement"
+            android:textSize="10sp"
+            android:paddingBottom="10sp"/>
+
+        <TextView
+            android:id="@+id/texte_nom_eleve_4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="TREARD Louis"
+            android:textColor="@color/texte_page_chargement"
+            android:textSize="10sp"
+            android:paddingBottom="10sp"/>
+    </LinearLayout>
+
+</LinearLayout>
