@@ -12,6 +12,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.gestionnairedabsence.SendFile;
+
 public class ListeEtudiantsActivity extends Activity {
     private static final String TAG = "ListeEtudiantsActivity";
     private List<Etudiant> listeEtudiants;
@@ -54,24 +56,27 @@ public class ListeEtudiantsActivity extends Activity {
             return;
         }
 
-        StringBuilder result = new StringBuilder("Absents :\n");
-        // Commence à 1 pour ignorer la première ligne (index 0)
-        for (int i = 1; i < listeEtudiants.size(); i++) {
+        // Récupérer la liste des absents
+        List<Etudiant> absents = new ArrayList<>();
+        for (int i = 1; i < listeEtudiants.size(); i++) { // Ignorer la première ligne
             Etudiant etudiant = listeEtudiants.get(i);
-            if (etudiant.getPresence() == 0) { // Affiche uniquement les absents
-                result.append(etudiant.getNom()).append(" ").append(etudiant.getPrenom()).append("\n");
+            if (etudiant.getPresence() == 0) {
+                absents.add(etudiant);
             }
         }
 
-        if (result.toString().equals("Absents :\n")) {
-            // Si aucun absent, afficher un message spécifique
+        if (absents.isEmpty()) {
             Toast.makeText(this, "Tous les étudiants sont présents.", Toast.LENGTH_SHORT).show();
         } else {
-            // Afficher la liste des absents
-            Log.d(TAG, "Liste des absents validée.");
-            Toast.makeText(this, result.toString(), Toast.LENGTH_LONG).show();
+            // Appeler SendFile pour envoyer les données des absents
+            List<String[]> lignes = new ArrayList<>();
+            SendFile sendFile = new SendFile();
+            sendFile.sendFile(lignes, listeEtudiants);
+
+            Toast.makeText(this, "Liste des présences mise à jour.", Toast.LENGTH_LONG).show();
         }
     }
+
 
 
 }

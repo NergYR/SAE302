@@ -5,12 +5,12 @@ import java.io.Serializable;
 public class Etudiant implements Serializable {
     private String nom;
     private String prenom;
-    private int presence;
+    private int presence; // 0 = absent, 1 = présent
 
     public Etudiant(String nom, String prenom) {
         this.nom = nom;
         this.prenom = prenom;
-        this.presence = 0;
+        this.presence = 0; // Par défaut, absent
     }
 
     public String getNom() {
