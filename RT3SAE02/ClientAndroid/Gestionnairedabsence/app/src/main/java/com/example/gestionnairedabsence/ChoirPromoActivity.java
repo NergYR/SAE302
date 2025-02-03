@@ -84,19 +84,26 @@ public class ChoirPromoActivity extends AppCompatActivity {
                 String line;
                 boolean isHeader = true;
 
-                while ((line = input.readLine()) != null && !line.isEmpty()) {
+                int emptyLineCount = 0;
+                while ((line = input.readLine()) != null) {
                     Log.d(TAG, "Réponse du serveur : " + line);
-
-                    if (isHeader) {
-                        isHeader = false;
-                        continue;
-                    }
 
                     String[] parts = line.split(";");
                     if (parts.length >= 7) { // Assurez-vous d'avoir assez de colonnes
                         etudiants.add(new Etudiant(parts[4], parts[6])); // Nom, prénom
                     }
+
+                    if (line.trim().isEmpty()) { // Vérifie si la ligne est vide
+                        emptyLineCount++;
+                        if (emptyLineCount >= 2) { // Arrête après deux lignes vides détectées
+                            Log.d(TAG, "Deux lignes vides détectées, fin de transmission.");
+                            break;
+                        }
+                        continue; // Ignore cette ligne vide et passe à la suivante
+                    }
+
                 }
+
 
                 //  Lancement immédiat de ListeEtudiantsActivity
 

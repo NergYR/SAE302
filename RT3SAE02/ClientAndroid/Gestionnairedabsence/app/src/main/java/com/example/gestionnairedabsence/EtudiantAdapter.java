@@ -1,13 +1,11 @@
 package com.example.gestionnairedabsence;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.BaseAdapter;
 
 import java.util.List;
 
@@ -35,32 +33,27 @@ public class EtudiantAdapter extends BaseAdapter {
         return position;
     }
 
-    @SuppressLint("SetTextI18n")
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.item_etudiant, parent, false);
+            LayoutInflater inflater = LayoutInflater.from(context);
+            convertView = inflater.inflate(R.layout.item_etudiant, parent, false);
+
             holder = new ViewHolder();
-            holder.textNomPrenom = convertView.findViewById(R.id.textNomPrenom);
-            holder.checkBoxPresent = convertView.findViewById(R.id.checkBoxPresent);
+            holder.nomPrenomTextView = convertView.findViewById(R.id.nomPrenomTextView);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        final Etudiant etudiant = etudiants.get(position);
-        holder.textNomPrenom.setText(etudiant.getNom() + " " + etudiant.getPrenom());
-        holder.checkBoxPresent.setChecked(etudiant.isPresent());
-
-        holder.checkBoxPresent.setOnCheckedChangeListener((buttonView, isChecked) -> etudiant.setPresent(isChecked));
+        Etudiant etudiant = etudiants.get(position);
+        holder.nomPrenomTextView.setText(etudiant.getNom() + " " + etudiant.getPrenom());
 
         return convertView;
     }
 
-    static class ViewHolder {
-        TextView textNomPrenom;
-        CheckBox checkBoxPresent;
+    private static class ViewHolder {
+        TextView nomPrenomTextView;
     }
 }
-
