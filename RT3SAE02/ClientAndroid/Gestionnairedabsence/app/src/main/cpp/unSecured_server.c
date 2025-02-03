@@ -14,11 +14,12 @@ void doprocessing(int sock) {
     char buffer[BUFFER_SIZE];
     char response[BUFFER_SIZE];
 
-    while(1) {  // Boucle principale pour maintenir la connexion
+    while (1) {  // Boucle principale pour maintenir la connexion
         DIR *d;
         struct dirent *dir;
         char file_list[BUFFER_SIZE] = "Liste des fichiers disponibles:\n";
 
+        // Liste des fichiers
         d = opendir("fiches");
         if (d) {
             while ((dir = readdir(d)) != NULL) {
@@ -42,8 +43,8 @@ void doprocessing(int sock) {
         }
 
         // Lecture du fichier demandé
-        bzero(buffer, BUFFER_SIZE);
-        n = read(sock, buffer, BUFFER_SIZE-1);
+        memset(buffer, 0, BUFFER_SIZE);  // Remplace bzero par memset
+        n = read(sock, buffer, BUFFER_SIZE - 1);
         if (n < 0) {
             perror("ERROR reading from socket");
             return;
@@ -60,7 +61,7 @@ void doprocessing(int sock) {
         // Ouverture et envoi du fichier demandé
         char filepath[BUFFER_SIZE];
         snprintf(filepath, sizeof(filepath), "fiches/%s", buffer);
-        
+
         FILE *file = fopen(filepath, "r");
         if (file == NULL) {
             char *error_msg = "Fichier non trouvé.\n\n";
@@ -77,36 +78,36 @@ void doprocessing(int sock) {
         // Attendre la réception du fichier modifié
         char complete_buffer[BUFFER_SIZE * 10] = {0};
         int total_received = 0;
-        memset(complete_buffer, 0, sizeof(complete_buffer));
-        
+        memset(complete_buffer, 0, sizeof(complete_buffer));  // Remplace bzero par memset
+
         // Utiliser un buffer temporaire pour chaque lecture
         char temp_buffer[BUFFER_SIZE] = {0};
-        while ((n = read(sock, temp_buffer, sizeof(temp_buffer)-1)) > 0) {
+        while ((n = read(sock, temp_buffer, sizeof(temp_buffer) - 1)) > 0) {
             // Ajouter null-terminator pour strstr
             temp_buffer[n] = '\0';
-            
+
             // Vérifier si on a assez d'espace dans le buffer
             if (total_received + n >= sizeof(complete_buffer)) {
                 write(sock, "Erreur: fichier trop grand\n", 27);
                 return;
             }
-            
+
             // Copier les nouvelles données
             memcpy(complete_buffer + total_received, temp_buffer, n);
             total_received += n;
-            
+
             // Vérifier si on a reçu le marqueur de fin
             if (strstr(temp_buffer, "END_OF_FILE") != NULL) {
                 // Trouver et supprimer le marqueur de fin
-                char* end = strstr(complete_buffer, "\nEND_OF_FILE");
+                char *end = strstr(complete_buffer, "\nEND_OF_FILE");
                 if (end != NULL) {
                     *end = '\0';
                     break;
                 }
             }
-            
+
             // Réinitialiser le buffer temporaire
-            memset(temp_buffer, 0, sizeof(temp_buffer));
+            memset(temp_buffer, 0, sizeof(temp_buffer));  // Remplace bzero par memset
         }
 
         if (total_received <= 0) {
@@ -119,14 +120,14 @@ void doprocessing(int sock) {
         struct tm *tm_info = localtime(&now);
         char timestamp[20];
         strftime(timestamp, 20, "%Y%m%d_%H%M%S", tm_info);
-        
+
         char new_filepath[BUFFER_SIZE];
         char *dot = strrchr(filepath, '.');
         if (dot != NULL) {
             strncpy(new_filepath, filepath, dot - filepath);
             new_filepath[dot - filepath] = '\0';
-            snprintf(new_filepath + strlen(new_filepath), BUFFER_SIZE - strlen(new_filepath), 
-                    "_presence_%s.csv", timestamp);
+            snprintf(new_filepath + strlen(new_filepath), BUFFER_SIZE - strlen(new_filepath),
+                     "_presence_%s.csv", timestamp);
         }
 
         // Écriture du fichier modifié
@@ -164,13 +165,13 @@ int unSecured_server(int port) {
     }
 
     /* Initialize socket structure */
-    bzero((char *) &serv_addr, sizeof(serv_addr));
+    memset((char *)&serv_addr, 0, sizeof(serv_addr));  // Remplace bzero par memset
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(port);
 
     /* Now bind the host address using bind() call.*/
-    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+    if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
         perror("ERROR on binding");
         exit(1);
     }
@@ -180,7 +181,7 @@ int unSecured_server(int port) {
     clilen = sizeof(cli_addr);
 
     while (1) {
-        newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+        newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
         if (newsockfd < 0) {
             perror("ERROR on accept");
             exit(1);

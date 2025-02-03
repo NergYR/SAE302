@@ -6,6 +6,7 @@
 #include <poll.h>
 #include <pthread.h>
 #include "server.h"
+#include "ssh_tunnel.h"  // Pour handle_client
 
 // Structure pour les données client
 typedef struct {

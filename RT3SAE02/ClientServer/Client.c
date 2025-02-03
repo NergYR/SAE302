@@ -7,124 +7,112 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "client_back.h"
+#include "server.h"
+#include "Client.h"
 
-#define BUFFER_SIZE 4096
 #define MAX_STUDENTS 100
-
-// Structure pour stocker les informations des élèves
-typedef struct {
-    char name[256];
-    char presence[20];
-} Student;
 
 // Fonction pour faire l'appel
 void processAttendance(char* buffer, Student* students, int* nbStudents) {
-    // Créer une copie du buffer pour la tokenisation
-    char* buffer_copy = strdup(buffer);
-    char* saveptr1 = NULL;  // Pour strtok_r
-    char* line = strtok_r(buffer_copy, "\n", &saveptr1);
+    char *line;
+    char *saveptr;
+    char *tempBuffer = strdup(buffer);  // Create a copy of buffer
     *nbStudents = 0;
-    char input[10];
-    
-    // Skip la première ligne (en-têtes)
-    if (line != NULL) {
-        line = strtok_r(NULL, "\n", &saveptr1);
+
+    if (!tempBuffer) {
+        printf("[ERROR] Failed to allocate memory for tempBuffer\n");
+        return;
     }
-    
+
+    printf("\nDébut de l'appel...\n");
+
+    // Parcourir chaque ligne du fichier
+    line = strtok_r(tempBuffer, "\n", &saveptr);
     while (line != NULL && *nbStudents < MAX_STUDENTS) {
-        // Copie de la ligne pour la tokenisation
-        char* temp_line = strdup(line);
-        char* saveptr2 = NULL;  // Pour la deuxième tokenisation
-        char* field = strtok_r(temp_line, ";", &saveptr2);
-        char* nom = NULL;
-        char* prenom = NULL;
-        int field_count = 0;
-        
-        while(field != NULL && field_count <= 7) {  // Changé à 7 pour inclure le champ TP
-            if(field_count == 4) nom = strdup(field);    
-            if(field_count == 5) prenom = strdup(field); // Changé à 5 pour le prénom
-            field = strtok_r(NULL, ";", &saveptr2);
-            field_count++;
-        }
-        
-        if(nom == NULL || prenom == NULL) {
-            printf("Format de ligne incorrect\n");
-            if(nom) free(nom);
-            if(prenom) free(prenom);
-            free(temp_line);
-            line = strtok_r(NULL, "\n", &saveptr1);
+        // Ignorer les lignes vides
+        if (strlen(line) == 0) {
+            line = strtok_r(NULL, "\n", &saveptr);
             continue;
         }
 
-        printf("\nPrésence de l'élève %s %s [absent] : ", nom, prenom);
-        fflush(stdout);
+        // Ignorer la ligne d'en-tête si présente
+        if (strstr(line, "etudid;") != NULL) {
+            line = strtok_r(NULL, "\n", &saveptr);
+            continue;
+        }
+
+        Student student;
+        memset(&student, 0, sizeof(Student));
+
+        // Nouvelle méthode de parsing avec strtok_r
+        char *token;
+        char *lineptr;
+        char linecopy[256];
+        strncpy(linecopy, line, sizeof(linecopy) - 1);
+        linecopy[sizeof(linecopy) - 1] = '\0';
+
+        int field = 0;
+        token = strtok_r(linecopy, ";", &lineptr);
+        while (token != NULL && field < 8) {
+            switch(field) {
+                case 0: strncpy(student.etudid, token, sizeof(student.etudid)-1); break;
+                case 1: strncpy(student.nip, token, sizeof(student.nip)-1); break;
+                case 2: strncpy(student.etat, token, sizeof(student.etat)-1); break;
+                case 3: strncpy(student.civilite, token, sizeof(student.civilite)-1); break;
+                case 4: strncpy(student.nom, token, sizeof(student.nom)-1); break;
+                case 5: strncpy(student.nomusuel, token, sizeof(student.nomusuel)-1); break;
+                case 6: strncpy(student.prenom, token, sizeof(student.prenom)-1); break;
+                case 7: strncpy(student.tp, token, sizeof(student.tp)-1); break;
+            }
+            token = strtok_r(NULL, ";", &lineptr);
+            field++;
+        }
+
+        if (field == 8) {
+            printf("\n----------------------------------------");
+            printf("\nÉtudiant %d:", *nbStudents + 1);
+            printf("\nNom: %s %s", student.nom, student.prenom);
+            printf("\nTP: %s", student.tp);
+            printf("\nPrésent ? (o/n) : ");
+            
+            char reponse;
+            scanf(" %c", &reponse);
+            while (getchar() != '\n');
+
+            student.presence = (reponse == 'o' || reponse == 'O') ? 'P' : 'A';
+            students[*nbStudents] = student;
+            (*nbStudents)++;
+            printf("Présence enregistrée : %c\n", student.presence);
+        } else {
+            printf("[DEBUG] Skipping invalid line: %s (got %d fields)\n", line, field);
+        }
         
-        // Lecture de l'entrée utilisateur
-        if (fgets(input, sizeof(input), stdin) != NULL) {
-            input[strcspn(input, "\n")] = 0;
-        } else {
-            input[0] = '\0';
-        }
-
-        // Copie de la ligne complète
-        strncpy(students[*nbStudents].name, line, 255);
-        students[*nbStudents].name[255] = '\0';
-
-        // Gestion présence/absence
-        if (input[0] == ' ' || input[0] == '\0') {
-            strcpy(students[*nbStudents].presence, "absent");
-            printf("=> Absent\n");
-        } else {
-            strcpy(students[*nbStudents].presence, "present");
-            printf("=> Présent\n");
-        }
-
-        free(nom);
-        free(prenom);
-        free(temp_line);
-        (*nbStudents)++;
-        line = strtok_r(NULL, "\n", &saveptr1);
+        line = strtok_r(NULL, "\n", &saveptr);
     }
-    
-    free(buffer_copy);
+
+    free(tempBuffer);
+    printf("\n----------------------------------------\n");
+    printf("Appel terminé. Nombre d'étudiants traités : %d\n", *nbStudents);
 }
 
-// Fonction pour créer le CSV modifié
+// Déplacer la fonction createModifiedCSV ici
 char* createModifiedCSV(Student* students, int nbStudents) {
-    static char csv[BUFFER_SIZE * 10];
-    memset(csv, 0, sizeof(csv));
-
-    // En-tête du CSV
-    strcat(csv, "etudid;code_nip;etat;civilite_str;nom;nom_usuel;prenom;TP;presence\n");
-
+    char* csv = malloc(BUFFER_SIZE * 10);
+    if (csv == NULL) return NULL;
+    
+    // Ajouter l'en-tête
+    strcpy(csv, "etudid;code_nip;etat;civilite_str;nom;nom_usuel;prenom;TP;presence\n");
+    
+    // Ajouter chaque étudiant
     for (int i = 0; i < nbStudents; i++) {
-        char line[1024];  // Augmenter la taille du buffer pour éviter la troncature
-        char* original = students[i].name;
-        
-        // Nettoyer la ligne
-        original[strcspn(original, "\n")] = 0;
-        original[strcspn(original, "\r")] = 0;
-
-        // Traiter les caractères spéciaux
-        char cleaned_line[512];
-        int j, k = 0;
-        for (j = 0; original[j] != '\0'; j++) {
-            if ((unsigned char)original[j] >= 32 && (unsigned char)original[j] <= 126) {
-                cleaned_line[k++] = original[j];
-            }
-        }
-        cleaned_line[k] = '\0';
-        
-        // Assurer que la ligne ne dépassera pas la taille du buffer
-        size_t max_len = sizeof(line) - strlen(students[i].presence) - 3; // -3 pour ";", "\n" et "\0"
-        if (strlen(cleaned_line) > max_len) {
-            cleaned_line[max_len] = '\0';
-        }
-        
-        snprintf(line, sizeof(line), "%s;%s\n", cleaned_line, students[i].presence);
+        char line[256];
+        snprintf(line, sizeof(line), "%s;%s;%s;%s;%s;%s;%s;%s;%c\n",
+                students[i].etudid, students[i].nip, students[i].etat,
+                students[i].civilite, students[i].nom, students[i].nomusuel,
+                students[i].prenom, students[i].tp, students[i].presence);
         strcat(csv, line);
     }
-
+    
     return csv;
 }
 

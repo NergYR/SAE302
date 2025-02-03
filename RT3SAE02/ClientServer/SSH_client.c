@@ -78,62 +78,75 @@ int ssh_client_main(int argc, char *argv[]) {
     // Envoi du nom de fichier
     ssh_channel_write(channel, buffer, strlen(buffer));
 
-    // Lecture du contenu du fichier
-    Student students[MAX_STUDENTS];
-    int nbStudents = 0;
+    // Modification de la partie réception et traitement du fichier
     char fileContent[BUFFER_SIZE * 10] = {0};
-    int totalReceived = 0;
+    char tempBuffer[BUFFER_SIZE] = {0};
+    int totalContent = 0;
+    int fileStarted = 0;
 
-    while ((nbytes = ssh_channel_read(channel, buffer, BUFFER_SIZE - 1, 0)) > 0) {
-        buffer[nbytes] = '\0';
-        
-        // Vérifier si on a reçu le marqueur de fin
-        if (strstr(buffer, "\nENDOFFILE\n") != NULL) {
-            char* end = strstr(buffer, "\nENDOFFILE\n");
-            *end = '\0';
-            if (end > buffer) {
-                strcat(fileContent + totalReceived, buffer);
+    // Réception du fichier
+    while ((nbytes = ssh_channel_read(channel, tempBuffer, BUFFER_SIZE - 1, 0)) > 0) {
+        tempBuffer[nbytes] = '\0';
+        printf("[DEBUG] Received chunk: %d bytes\n", nbytes);
+
+        if (strstr(tempBuffer, "BEGIN_FILE") != NULL) {
+            fileStarted = 1;
+            char* start = strstr(tempBuffer, "BEGIN_FILE\n");
+            if (start != NULL) {
+                start += strlen("BEGIN_FILE\n");
+                size_t len = strlen(start);
+                memcpy(fileContent + totalContent, start, len);
+                totalContent += len;
             }
-            break;
+            continue;
         }
 
-        strcat(fileContent + totalReceived, buffer);
-        totalReceived += nbytes;
+        if (fileStarted) {
+            if (strstr(tempBuffer, "END_FILE") != NULL) {
+                char* end = strstr(tempBuffer, "END_FILE");
+                size_t len = end - tempBuffer;
+                if (len > 0) {
+                    memcpy(fileContent + totalContent, tempBuffer, len);
+                    totalContent += len;
+                }
+                break;
+            }
 
-        // Vérifier si le buffer est plein
-        if (totalReceived >= (BUFFER_SIZE * 10) - BUFFER_SIZE) {
-            fprintf(stderr, "File too large\n");
-            return 1;
+            size_t len = strlen(tempBuffer);
+            if (totalContent + len < BUFFER_SIZE * 10) {
+                memcpy(fileContent + totalContent, tempBuffer, len);
+                totalContent += len;
+            }
         }
     }
 
-    if (totalReceived == 0) {
-        fprintf(stderr, "No data received\n");
-        return 1;
-    }
+    if (totalContent > 0) {
+        fileContent[totalContent] = '\0';
+        printf("\n[DEBUG] Total content received: %d bytes\n", totalContent);
+        printf("[DEBUG] First few bytes of content:\n%.100s\n", fileContent);
 
-    // Traitement de l'appel
-    printf("\nDébut de l'appel...\n");
-    processAttendance(fileContent, students, &nbStudents);
+        Student students[MAX_STUDENTS];
+        int nbStudents = 0;
 
-    // Création du CSV modifié
-    char* modifiedCSV = createModifiedCSV(students, nbStudents);
-    printf("\nEnvoi du fichier modifié au serveur...\n");
-    printf("\n[DEBUG] Contenu du CSV à envoyer :\n%s\n", modifiedCSV);
+        // Traitement de l'appel
+        processAttendance(fileContent, students, &nbStudents);
 
-    // Préparation et envoi du fichier modifié
-    char finalBuffer[BUFFER_SIZE * 10];
-    snprintf(finalBuffer, sizeof(finalBuffer), "%s\nEND_OF_FILE\n", modifiedCSV);
-    
-    size_t total_length = strlen(finalBuffer);
-    size_t sent = 0;
-    while (sent < total_length) {
-        nbytes = ssh_channel_write(channel, finalBuffer + sent,
-                                 (total_length - sent < BUFFER_SIZE) ? total_length - sent : BUFFER_SIZE);
-        if (nbytes < 0) {
-            error_ssh(session, "Error sending modified file");
+        if (nbStudents > 0) {
+            // Création du CSV modifié
+            char* modifiedCSV = createModifiedCSV(students, nbStudents);
+            if (modifiedCSV) {
+                printf("\nEnvoi du fichier modifié au serveur...\n");
+
+                // Préparation et envoi du fichier modifié
+                char* finalBuffer = malloc(strlen(modifiedCSV) + 20);
+                if (finalBuffer) {
+                    sprintf(finalBuffer, "%s\nEND_OF_FILE\n", modifiedCSV);
+                    ssh_channel_write(channel, finalBuffer, strlen(finalBuffer));
+                    free(finalBuffer);
+                }
+                free(modifiedCSV);
+            }
         }
-        sent += nbytes;
     }
 
     // Lecture de la confirmation

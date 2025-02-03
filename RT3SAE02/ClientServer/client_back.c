@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "client_back.h"
+#include "Client.h"  // Ajout de l'include pour la structure Student
 
 
 void error(const char *msg) {
@@ -42,3 +43,6 @@ int connect_to_server(const char *hostname, int portno, int *sockfd) {
 
     return 0;
 }
+
+// Supprimer complètement la fonction createModifiedCSV de ce fichier
+// Elle est maintenant dans Client.c

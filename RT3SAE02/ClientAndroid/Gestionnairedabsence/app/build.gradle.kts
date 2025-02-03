@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.uvsq.gestionnairedabsence"
+    namespace = "com.example.gestionnairedabsence"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.uvsq.gestionnairedabsence"
+        applicationId = "com.example.gestionnairedabsence"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

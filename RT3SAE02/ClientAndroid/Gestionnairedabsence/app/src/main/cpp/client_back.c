@@ -8,7 +8,6 @@
 #include <netdb.h>
 #include "client_back.h"
 
-
 void error(const char *msg) {
     perror(msg);
     exit(0);
@@ -30,12 +29,16 @@ int connect_to_server(const char *hostname, int portno, int *sockfd) {
         return 1;
     }
 
-    bzero((char *) &serv_addr, sizeof(serv_addr));
+    // Initialise la structure à zéro
+    memset((char *)&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
-    bcopy((char *)server->h_addr_list[0], (char *)&serv_addr.sin_addr.s_addr, server->h_length);
+
+    // Remplace bcopy par memcpy
+    memcpy((char *)&serv_addr.sin_addr.s_addr, (char *)server->h_addr_list[0], server->h_length);
+
     serv_addr.sin_port = htons(portno);
 
-    if (connect(*sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+    if (connect(*sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
         error("[ERROR] connecting");
         return 1;
     }

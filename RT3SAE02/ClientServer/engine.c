@@ -3,49 +3,47 @@
 #include <string.h> 
 #include <unistd.h> 
 #include <sys/types.h>
-#include "server.h"
+#include "server.h" // pour fichesDirGlobal
 
+#define BUFFER_SIZE 1024
 
 char* sendfile(const char* filename) {
-    char full_path[BUFFER_SIZE];
-    snprintf(full_path, sizeof(full_path), "%s%s", FILE_PATH, filename);
-
-    // Ajouter un message de débogage pour vérifier le chemin complet
-    printf("[DEBUG] Chemin complet du fichier : %s\n", full_path);
-
-    FILE *file = fopen(full_path, "r");
-    if (file == NULL) {
-        perror("Unable to open file");
+    printf("[DEBUG] Tentative d'ouverture du fichier: %s\n", filename);
+    char* fileContent = malloc(BUFFER_SIZE * 10);
+    if (!fileContent) {
+        printf("[ERROR] Échec allocation mémoire\n");
+        return NULL;
+    }
+    memset(fileContent, 0, BUFFER_SIZE * 10);
+    
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        perror("[ERROR] Impossible d'ouvrir le fichier");
+        free(fileContent);
         return NULL;
     }
 
-    // Calculer la taille du fichier
-    fseek(file, 0, SEEK_END);
-    long file_size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    printf("[DEBUG] Taille du fichier : %ld\n", file_size);
-
-    // Allouer de la mémoire pour le contenu du fichier
-    char *file_content = malloc(file_size + 1);
-    if (file_content == NULL) {
-        perror("Unable to allocate memory");
+    // Lire et ignorer la première ligne (header)
+    char buffer[BUFFER_SIZE];
+    if (fgets(buffer, BUFFER_SIZE, file) == NULL) {
+        printf("[ERROR] Erreur lecture header\n");
         fclose(file);
+        free(fileContent);
         return NULL;
     }
 
-    // Lire le contenu du fichier
-    size_t total_read = 0;
-    size_t bytes_read;
-    while ((bytes_read = fread(file_content + total_read, 1, file_size - total_read, file)) > 0) {
-        total_read += bytes_read;
+    // Lire le reste du fichier
+    size_t totalRead = 0;
+    while (fgets(buffer, BUFFER_SIZE, file)) {
+        size_t len = strlen(buffer);
+        if (totalRead + len >= BUFFER_SIZE * 10) break;
+        strcat(fileContent + totalRead, buffer);
+        totalRead += len;
     }
-    file_content[total_read] = '\0'; // Ajouter le caractère de fin de chaîne
-
-    printf("[DEBUG] Total lu : %ld\n", total_read);
-
+    
     fclose(file);
-    return file_content;
+    printf("[DEBUG] Fichier lu avec succès, taille: %zu octets\n", totalRead);
+    return fileContent;
 }
 
 int process(char* buffer) {
