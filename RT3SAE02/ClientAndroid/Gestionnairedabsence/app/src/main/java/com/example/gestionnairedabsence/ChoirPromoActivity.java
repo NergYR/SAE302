@@ -84,7 +84,7 @@ public class ChoirPromoActivity extends AppCompatActivity {
                 String line;
                 boolean isHeader = true;
 
-                while ((line = input.readLine()) != null) {
+                while ((line = input.readLine()) != null && !line.isEmpty()) {
                     Log.d(TAG, "Réponse du serveur : " + line);
 
                     if (isHeader) {
