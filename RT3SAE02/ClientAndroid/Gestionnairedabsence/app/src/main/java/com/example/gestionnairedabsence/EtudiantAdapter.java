@@ -4,10 +4,13 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.BaseAdapter;
 
 import java.util.List;
+
+import com.example.gestionnairedabsence.Etudiant;
 
 public class EtudiantAdapter extends BaseAdapter {
     private final Context context;
@@ -42,27 +45,33 @@ public class EtudiantAdapter extends BaseAdapter {
 
             holder = new ViewHolder();
             holder.nomPrenomTextView = convertView.findViewById(R.id.nomPrenomTextView);
+            holder.presenceIcon = convertView.findViewById(R.id.presenceIcon);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        // Gestion de la première ligne
-        if (position == 0) {
-            // Rendre la première ligne invisible
-            convertView.setVisibility(View.GONE);
-            convertView.setClickable(false);
+        Etudiant etudiant = etudiants.get(position);
+        holder.nomPrenomTextView.setText(etudiant.getNom() + " " + etudiant.getPrenom());
+
+        // Gestion de la présence
+        if (etudiant.getPresence() == 1) {
+            holder.presenceIcon.setImageResource(android.R.drawable.checkbox_on_background);
         } else {
-            // Afficher les autres lignes normalement
-            convertView.setVisibility(View.VISIBLE);
-            Etudiant etudiant = etudiants.get(position);
-            holder.nomPrenomTextView.setText(etudiant.getNom() + " " + etudiant.getPrenom());
+            holder.presenceIcon.setImageResource(android.R.drawable.checkbox_off_background);
         }
+
+        convertView.setOnClickListener(v -> {
+            int nouvellePresence = (etudiant.getPresence() == 0) ? 1 : 0;
+            etudiant.setPresence(nouvellePresence);
+            notifyDataSetChanged();
+        });
 
         return convertView;
     }
 
     private static class ViewHolder {
         TextView nomPrenomTextView;
+        ImageView presenceIcon;
     }
 }
