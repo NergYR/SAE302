@@ -7,14 +7,12 @@ public class Etudiant implements Serializable {
     private String prenom;
     private int presence; // 0 = absent, 1 = présent
 
-    // Constructeur
     public Etudiant(String nom, String prenom) {
         this.nom = nom;
         this.prenom = prenom;
-        this.presence = 0; // Par défaut, absent
+        this.presence = 0;
     }
 
-    // Getters et Setters
     public String getNom() {
         return nom;
     }

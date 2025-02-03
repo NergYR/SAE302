@@ -39,6 +39,7 @@ public class EtudiantAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
+
         if (convertView == null) {
             LayoutInflater inflater = LayoutInflater.from(context);
             convertView = inflater.inflate(R.layout.item_etudiant, parent, false);
@@ -51,16 +52,26 @@ public class EtudiantAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
+        // Ne masque que la première ligne
+        if (position == 0) {
+            convertView.setVisibility(View.GONE);
+            convertView.setClickable(false);
+            return convertView; // Retourne directement sans configurer
+        }
+
+        // Affiche correctement les autres lignes
+        convertView.setVisibility(View.VISIBLE);
         Etudiant etudiant = etudiants.get(position);
         holder.nomPrenomTextView.setText(etudiant.getNom() + " " + etudiant.getPrenom());
 
-        // Gestion de la présence
+        // Met à jour l'icône en fonction de la présence
         if (etudiant.getPresence() == 1) {
             holder.presenceIcon.setImageResource(android.R.drawable.checkbox_on_background);
         } else {
             holder.presenceIcon.setImageResource(android.R.drawable.checkbox_off_background);
         }
 
+        // Gestion du clic pour alterner la présence
         convertView.setOnClickListener(v -> {
             int nouvellePresence = (etudiant.getPresence() == 0) ? 1 : 0;
             etudiant.setPresence(nouvellePresence);
@@ -69,6 +80,7 @@ public class EtudiantAdapter extends BaseAdapter {
 
         return convertView;
     }
+
 
     private static class ViewHolder {
         TextView nomPrenomTextView;

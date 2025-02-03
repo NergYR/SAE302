@@ -50,16 +50,25 @@ public class ListeEtudiantsActivity extends Activity {
 
     private void validerPresence() {
         if (listeEtudiants.isEmpty()) {
-            Toast.makeText(this, "Aucun étudiant à valider.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Aucun étudiant dans la liste.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        StringBuilder result = new StringBuilder("Présents :\n");
+        StringBuilder result = new StringBuilder("Absents :\n");
         for (Etudiant etudiant : listeEtudiants) {
-            result.append(etudiant.getNom()).append(" ").append(etudiant.getPrenom()).append("\n");
+            if (etudiant.getPresence() == 0) { // Affiche uniquement les absents
+                result.append(etudiant.getNom()).append(" ").append(etudiant.getPrenom()).append("\n");
+            }
         }
 
-        Log.d(TAG, "Liste des présents validée.");
-        Toast.makeText(this, result.toString(), Toast.LENGTH_LONG).show();
+        if (result.toString().equals("Absents :\n")) {
+            // Si aucun absent, afficher un message spécifique
+            Toast.makeText(this, "Tous les étudiants sont présents.", Toast.LENGTH_SHORT).show();
+        } else {
+            // Afficher la liste des absents
+            Log.d(TAG, "Liste des absents validée.");
+            Toast.makeText(this, result.toString(), Toast.LENGTH_LONG).show();
+        }
     }
+
 }

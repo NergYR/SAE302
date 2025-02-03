@@ -3,18 +3,23 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="10dp"
-    android:orientation="vertical">
+    android:orientation="horizontal">
 
+    <!-- Texte avec le nom et prénom -->
     <TextView
         android:id="@+id/nomPrenomTextView"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:textSize="16sp"
         android:textColor="@android:color/black" />
 
+    <!-- Icône pour la présence, alignée à droite -->
     <ImageView
-    android:id="@+id/presenceIcon"
-    android:layout_width="24dp"
-    android:layout_height="24dp"
-    android:src="@android:drawable/checkbox_off_background" />
+        android:id="@+id/presenceIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="8dp"
+        android:src="@android:drawable/checkbox_off_background" />
 </LinearLayout>

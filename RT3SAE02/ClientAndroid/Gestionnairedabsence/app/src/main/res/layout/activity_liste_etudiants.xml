@@ -23,5 +23,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:backgroundTint="@color/bouton_validation_authentification"
-        android:text="Valider la liste de présence"/>
+        android:text="Valider la liste de présence"
+        android:textColor="@android:color/white"/>
 </LinearLayout>
