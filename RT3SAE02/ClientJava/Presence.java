@@ -16,23 +16,17 @@ public class Presence {
 
     public void MarkPresence(List<Integer> pres){
         list_student.get(0).add("présence");
-        for (int i = 1; i < this.list_student.size(); i++) {
-            if(i<pres.size()){
-                if(pres.get(i)==1){
-                    list_student.get(i).add("présent");
-                }
-                else if(pres.get(i)==0){
-                    list_student.get(i).add("absent");
-                }
-                else{
-                    list_student.get(i).add("NaN");
-                }
+        for (int i = 0; i < pres.size(); i++) {
+            if(pres.get(i)==1){
+                list_student.get(i+1).add("présent");
+            }
+            else if(pres.get(i)==0){
+                list_student.get(i+1).add("absent");
             }
             else{
-                list_student.get(i).add("NaN");
+                list_student.get(i+1).add("NaN");
             }
         }
-        System.out.println(this.list_student);
     }
 
     public List<Integer> Appel(){

@@ -1,7 +1,13 @@
-import java.io.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CommServ {
     
@@ -18,15 +24,9 @@ public class CommServ {
         Connect();
     }
 
-    public CommServ(String addr){
-        this.addr = addr;
-        Connect();
-    }
-
     public void Connect(){
         try {
             this.socket = new Socket(this.addr,this.port);
-            //this.socket.connect(new InetSocketAddress(this.addr, this.port), this.port);
             this.input = new DataInputStream(this.socket.getInputStream());
             this.output = new DataOutputStream(this.socket.getOutputStream());
             in = new  BufferedReader(new InputStreamReader(this.socket.getInputStream()));
@@ -64,7 +64,6 @@ public class CommServ {
 
     public void SendInfo(String m){
         try {
-            //this.output.write(m.getBytes());
             OutputStreamWriter writer = new OutputStreamWriter(this.output, StandardCharsets.UTF_8);
             writer.write(m + "\n"); // Ajoute un \n pour faciliter la lecture en C
             writer.flush(); // Envoi immédiat
