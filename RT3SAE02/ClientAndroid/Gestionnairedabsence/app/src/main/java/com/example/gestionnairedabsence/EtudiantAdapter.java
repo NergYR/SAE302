@@ -47,8 +47,17 @@ public class EtudiantAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        Etudiant etudiant = etudiants.get(position);
-        holder.nomPrenomTextView.setText(etudiant.getNom() + " " + etudiant.getPrenom());
+        // Gestion de la première ligne
+        if (position == 0) {
+            // Rendre la première ligne invisible
+            convertView.setVisibility(View.GONE);
+            convertView.setClickable(false);
+        } else {
+            // Afficher les autres lignes normalement
+            convertView.setVisibility(View.VISIBLE);
+            Etudiant etudiant = etudiants.get(position);
+            holder.nomPrenomTextView.setText(etudiant.getNom() + " " + etudiant.getPrenom());
+        }
 
         return convertView;
     }
