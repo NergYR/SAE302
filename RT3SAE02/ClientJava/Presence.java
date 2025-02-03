@@ -1,4 +1,6 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class Presence {
     
@@ -12,14 +14,14 @@ public class Presence {
         return this.list_student;
     }
 
-    public void Console_MarkPresenceStudent(List<Integer> pres){
+    public void MarkPresence(List<Integer> pres){
         list_student.get(0).add("présence");
         for (int i = 1; i < this.list_student.size(); i++) {
             if(i<pres.size()){
-                if(pres.get(i-1)==1){
+                if(pres.get(i)==1){
                     list_student.get(i).add("présent");
                 }
-                else if(pres.get(i-1)==0){
+                else if(pres.get(i)==0){
                     list_student.get(i).add("absent");
                 }
                 else{
