@@ -63,8 +63,12 @@ public class ListeEtudiantsActivity extends Activity {
         String serverIp = getIntent().getStringExtra("serverIp");
         int serverPort = getIntent().getIntExtra("serverPort", -1);
 
+        Log.d(TAG, "serverIp reçu : " + serverIp);
+        Log.d(TAG, "serverPort reçu : " + serverPort);
+
         if (serverIp == null || serverPort == -1) {
             Toast.makeText(this, "Adresse ou port du serveur non configurés.", Toast.LENGTH_LONG).show();
+            Log.e(TAG, "Erreur : serveurIp ou serveurPort non reçus !");
             return;
         }
 

@@ -16,10 +16,16 @@ public class SendFile {
                 // Construire les données à envoyer
                 StringBuilder data = new StringBuilder();
                 for (Etudiant etudiant : etudiants) {
+                    // Vérifie si les valeurs sont "nom" et "prenom", si oui on ignore cette ligne
+                    if ("nom".equalsIgnoreCase(etudiant.getNom()) && "prenom".equalsIgnoreCase(etudiant.getPrenom())) {
+                        continue; // Ignore cette ligne et passe au prochain étudiant
+                    }
+
                     data.append(etudiant.getNom()).append(";")
                             .append(etudiant.getPrenom()).append(";")
                             .append(etudiant.getPresence()).append("\n");
                 }
+
 
                 // Envoyer les données au serveur
                 writer.println(data.toString());

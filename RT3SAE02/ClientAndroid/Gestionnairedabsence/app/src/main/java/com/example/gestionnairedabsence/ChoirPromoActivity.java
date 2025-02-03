@@ -111,6 +111,8 @@ public class ChoirPromoActivity extends AppCompatActivity {
                     Intent nextIntent = new Intent(ChoirPromoActivity.this, ListeEtudiantsActivity.class);
                     nextIntent.putExtra("promoSelectionnee", selectedPromo);
                     nextIntent.putExtra("listeEtudiants", etudiants);
+                    nextIntent.putExtra("serverIp", serverIp); // ✅ Ajout de serverIp
+                    nextIntent.putExtra("serverPort", serverPort); // ✅ Ajout de serverPort
                     startActivity(nextIntent);
                 });
 
