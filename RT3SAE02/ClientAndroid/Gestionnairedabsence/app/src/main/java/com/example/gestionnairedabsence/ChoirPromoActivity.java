@@ -17,6 +17,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import android.widget.Button;
+
 
 public class ChoirPromoActivity extends AppCompatActivity {
     private static final String TAG = "ChoirPromoActivity";
@@ -30,6 +32,7 @@ public class ChoirPromoActivity extends AppCompatActivity {
 
         TextView titre = findViewById(R.id.titrePromo);
         ListView listViewPromos = findViewById(R.id.listViewPromos);
+        Button buttonRetour = findViewById(R.id.buttonRetour);
 
         titre.setText("Listes Promo");
 
@@ -66,6 +69,11 @@ public class ChoirPromoActivity extends AppCompatActivity {
             selectedPromo = listePromos.get(position);
             Log.d(TAG, "Promotion sélectionnée : " + selectedPromo);
             fetchCSVContent(selectedPromo + ".csv", serverIp, serverPort);
+        });
+
+        buttonRetour.setOnClickListener(v -> {
+            Log.d(TAG, "Bouton Retour cliqué, retour à MainActivity.");
+            navigateToMainActivity();
         });
     }
 
