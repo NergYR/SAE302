@@ -19,7 +19,6 @@ void doprocessing(int sock) {
         struct dirent *dir;
         char file_list[BUFFER_SIZE] = "Liste des fichiers disponibles:\n";
 
-        // Liste des fichiers
         d = opendir("fiches");
         if (d) {
             while ((dir = readdir(d)) != NULL) {
