@@ -1,7 +1,7 @@
 #include <libssh/server.h>
 #include <libssh/libssh.h>
 #define BUFFER_SIZE 1024
-#define FILE_PATH "/home/energetiq/Bureau/CODE/SAE302/fiches/"
+#define FILE_PATH "/home/kali/CODE/SAEDEV/SAE302/fiches/"
 
 // Function to get configuration from file
 void getConf(const char *filename, int *port, char* serverName, char* isSecured, char* hostKeyPath, char* username, char* password);

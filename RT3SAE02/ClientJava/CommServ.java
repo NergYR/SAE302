@@ -1,6 +1,6 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class CommServ {
@@ -10,6 +10,7 @@ public class CommServ {
     private Socket socket = null;
     private DataInputStream input = null;
     private DataOutputStream output = null;
+    private BufferedReader in = null;
 
     public CommServ(String addr, int port){
         this.port = port;
@@ -22,44 +23,88 @@ public class CommServ {
         Connect();
     }
 
-    public String Connect(){
+    public void Connect(){
         try {
             this.socket = new Socket(this.addr,this.port);
+            //this.socket.connect(new InetSocketAddress(this.addr, this.port), this.port);
             this.input = new DataInputStream(this.socket.getInputStream());
             this.output = new DataOutputStream(this.socket.getOutputStream());
+            in = new  BufferedReader(new InputStreamReader(this.socket.getInputStream()));
         }
         catch (Exception e) {
             System.out.print(e.getMessage());
         }
-        return "";
     }
 
-    public List<List<String>> GetInfo(){
-        //reçu ligne par ligne
-        String line = "";
-        List<List<String>> csv_tab = new ArrayList<>();
-        String[] tab_line = line.split(";");
-        List<String> list_line = new ArrayList<>();
-        for (String s : tab_line) {
-            list_line.add(s);
+    public void Disconnect(){
+        try{
+            this.input.close();
+            this.output.close();
+            this.socket.close();
+            System.out.print("Déconnecté");
         }
-        csv_tab.add(list_line);
+        catch(IOException e){
+            System.out.print(e);
+        }
+    }
+
+    public List<String> GetInfo(){
+        List<String> result = new ArrayList<>();
+        try {
+            String line = ";";
+            while (!line.trim().isEmpty() && line!=null){
+                line = in.readLine();
+                result.add(line);
+            }
+        } 
+        catch (Exception e) {
+        }
+        return result;
+    }
+
+    public void SendInfo(String m){
+        try {
+            //this.output.write(m.getBytes());
+            OutputStreamWriter writer = new OutputStreamWriter(this.output, StandardCharsets.UTF_8);
+            writer.write(m + "\n"); // Ajoute un \n pour faciliter la lecture en C
+            writer.flush(); // Envoi immédiat
+
+        } catch (Exception e) {
+        }
+    }
+
+    public List<List<String>> GetFile(){
+        //transforme un string en liste de liste
+        String line = "";
+        String[] temp = null;
+        List<List<String>> csv_tab = new ArrayList<>();
+        try {
+            List<String> lines = this.GetInfo();
+            for(int i = 0; i<lines.size()-1;i++){
+                temp = lines.get(i).split(";");
+                List<String>temp_list = new ArrayList<>();
+                for(int j=0;j<temp.length;j++){
+                    temp_list.add(temp[j]);
+                }
+                csv_tab.add(temp_list);
+            }
+        } 
+        catch (Exception e) {
+        }
         return csv_tab;
     }
 
     public void SendFile(List<List<String>> file){
-        //envoyer date puis fichier ligne par ligne
-        List<String> list = null;
-        String line = "";
-        for (int i = 0; i < file.size(); i++) {
-            list = file.get(i);
-            for (int j = 0; j < list.size(); j++) {
-                line += list.get(j)+";";
+        //transforme une liste de liste en string
+        String str_file = "";
+        List<String> line = new ArrayList<>();
+        for (int i=0;i<file.size();i++){
+            line = file.get(i);
+            for (int j=0;j<line.size();j++){
+                str_file = str_file+line.get(j)+";";
             }
+            str_file += "\n";
         }
-    }
-
-    public void SendLine(){
-
+        SendInfo(str_file);
     }
 }

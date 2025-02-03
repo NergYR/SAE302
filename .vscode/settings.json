@@ -1,7 +1,9 @@
 {
     "files.associations": {
         "gtk.h": "c",
-        "server.h": "c"
+        "server.h": "c",
+        "libssh.h": "c",
+        "client_back.h": "c"
     },
     "makefile.buildLog": "²"
 }
