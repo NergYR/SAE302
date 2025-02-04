@@ -13,12 +13,16 @@ ifeq ($(UNAME_S),Linux)
     SUDO = sudo
     
     ifeq ($(DISTRO),Debian)
-        INSTALL_DEPS = $(SUDO) apt-get update && $(SUDO) apt-get install -y libssh-dev gcc make
+        INSTALL_DEPS = $(SUDO) apt-get update && $(SUDO) apt-get install -y build-essential libssh-dev
+    else ifeq ($(DISTRO),Ubuntu)
+        INSTALL_DEPS = $(SUDO) apt-get update && $(SUDO) apt-get install -y build-essential libssh-dev
+    else ifeq ($(DISTRO),Kali)
+        INSTALL_DEPS = $(SUDO) apt-get update && $(SUDO) apt-get install -y build-essential libssh-dev
     else ifneq (,$(filter $(DISTRO),RedHat CentOS Rocky))
-        INSTALL_DEPS = $(SUDO) yum install -y libssh-devel gcc make
+        INSTALL_DEPS = $(SUDO) yum groupinstall -y "Development Tools" && $(SUDO) yum install -y libssh-devel
     endif
 else ifeq ($(UNAME_S),Darwin)
-    # Configuration pour MacOS
+    # Configuration MacOS
     RM = rm -f
     CC = clang
     CFLAGS = -O2 -Wall
@@ -54,8 +58,12 @@ all: check-deps $(V2_SERVER_EXEC) $(V2_CLIENT_EXEC) $(V2_SSH_CLIENT_EXEC)
 
 check-deps:
 	@echo "Vérification/Installation des dépendances..."
-	@$(INSTALL_DEPS) || (echo "Erreur lors de l'installation des dépendances" && exit 1)
-
+	@if [ -n "$(INSTALL_DEPS)" ]; then \
+		$(INSTALL_DEPS); \
+	else \
+		echo "Distribution non reconnue. Veuillez installer manuellement les dépendances."; \
+		exit 1; \
+	fi
 $(V2_SERVER_EXEC): $(V2_SERVER_OBJ)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIB)
 
