@@ -13,13 +13,13 @@ ifeq ($(UNAME_S),Linux)
     SUDO = sudo
     
     ifeq ($(DISTRO),Debian)
-        INSTALL_DEPS = $(SUDO) apt-get update && $(SUDO) apt-get install -y build-essential libssh-dev
+        INSTALL_DEPS = $(SUDO) apt-get install -y build-essential libssh-dev
     else ifeq ($(DISTRO),Ubuntu)
-        INSTALL_DEPS = $(SUDO) apt-get update && $(SUDO) apt-get install -y build-essential libssh-dev
+        INSTALL_DEPS = $(SUDO) apt-get install -y build-essential libssh-dev
     else ifeq ($(DISTRO),Kali)
-        INSTALL_DEPS = $(SUDO) apt-get update && $(SUDO) apt-get install -y build-essential libssh-dev
+        INSTALL_DEPS = $(SUDO) apt-get install -y build-essential libssh-dev
     else ifneq (,$(filter $(DISTRO),RedHat CentOS Rocky))
-        INSTALL_DEPS = $(SUDO) yum groupinstall -y "Development Tools" && $(SUDO) yum install -y libssh-devel
+        INSTALL_DEPS = $(SUDO) yum install -y libssh-devel
     endif
 else ifeq ($(UNAME_S),Darwin)
     # Configuration MacOS
