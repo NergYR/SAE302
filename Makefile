@@ -14,7 +14,7 @@ java:
 # Compilation du serveur
 server:
 	@echo "=== Construction du serveur et client en C ==="
-	@cd $(SERVER_DIR) && $(MAKE) install
+	@cd $(SERVER_DIR) && $(MAKE)
 
 # Compilation du projet Android
 android:
