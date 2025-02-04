@@ -16,7 +16,6 @@ public class CommServ {
     private Socket socket = null;
     private DataInputStream input = null;
     private DataOutputStream output = null;
-    private BufferedReader in = null;
 
     public CommServ(String addr, int port){
         this.port = port;
@@ -29,7 +28,6 @@ public class CommServ {
             this.socket = new Socket(this.addr,this.port);
             this.input = new DataInputStream(this.socket.getInputStream());
             this.output = new DataOutputStream(this.socket.getOutputStream());
-            in = new  BufferedReader(new InputStreamReader(this.socket.getInputStream()));
         }
         catch (Exception e) {
             System.out.print(e.getMessage());
