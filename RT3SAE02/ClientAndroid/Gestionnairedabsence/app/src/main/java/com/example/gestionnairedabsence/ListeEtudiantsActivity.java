@@ -3,20 +3,15 @@ package com.example.gestionnairedabsence;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.gestionnairedabsence.SendFile;
-import com.example.gestionnairedabsence.Etudiant;
-
-
-
+/**
+ * Activité permettant d'afficher la liste des étudiants et de valider leur présence.
+ */
 public class ListeEtudiantsActivity extends Activity {
     private static final String TAG = "ListeEtudiantsActivity";
     private List<Etudiant> listeEtudiants;
@@ -26,10 +21,11 @@ public class ListeEtudiantsActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_liste_etudiants);
 
+        // Récupération des éléments de l'interface utilisateur
         ListView listViewEtudiants = findViewById(R.id.listViewEtudiants);
         Button buttonValider = findViewById(R.id.buttonValider);
 
-        // ✅ Récupération des étudiants envoyés depuis ChoirPromoActivity
+        // Récupération de la liste des étudiants envoyée depuis ChoirPromoActivity
         if (getIntent().hasExtra("listeEtudiants")) {
             listeEtudiants = (ArrayList<Etudiant>) getIntent().getSerializableExtra("listeEtudiants");
         } else {
@@ -38,6 +34,7 @@ public class ListeEtudiantsActivity extends Activity {
             Toast.makeText(this, "Aucune donnée reçue", Toast.LENGTH_SHORT).show();
         }
 
+        // Vérification si la liste des étudiants est vide
         if (listeEtudiants.isEmpty()) {
             Toast.makeText(this, "Liste vide. Vérifiez la connexion au serveur.", Toast.LENGTH_LONG).show();
             Log.w(TAG, "Liste des étudiants vide.");
@@ -45,21 +42,24 @@ public class ListeEtudiantsActivity extends Activity {
             Log.d(TAG, "Nombre d'étudiants reçus : " + listeEtudiants.size());
         }
 
-        // ✅ Utilisation d'EtudiantAdapter pour afficher les étudiants
+        // Utilisation d'EtudiantAdapter pour afficher la liste des étudiants
         EtudiantAdapter adapter = new EtudiantAdapter(this, listeEtudiants);
         listViewEtudiants.setAdapter(adapter);
 
-        // ✅ Gestion du bouton de validation
+        // Gestion du bouton de validation de présence
         buttonValider.setOnClickListener(v -> validerPresence());
     }
 
+    /**
+     * Valide la présence des étudiants et envoie les données au serveur.
+     */
     private void validerPresence() {
         if (listeEtudiants.isEmpty()) {
             Toast.makeText(this, "Aucun étudiant dans la liste.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Récupérer les informations du serveur depuis l'Intent
+        // Récupération des informations du serveur depuis l'Intent
         String serverIp = getIntent().getStringExtra("serverIp");
         int serverPort = getIntent().getIntExtra("serverPort", -1);
 
@@ -72,16 +72,15 @@ public class ListeEtudiantsActivity extends Activity {
             return;
         }
 
-        // Appeler SendFile pour envoyer tous les étudiants (présents et absents)
+        // Envoi des données de présence des étudiants au serveur
         SendFile sendFile = new SendFile();
         sendFile.sendFile(serverIp, serverPort, listeEtudiants);
 
         Toast.makeText(this, "Liste des présences envoyée au serveur.", Toast.LENGTH_LONG).show();
 
-        // Revenir à la page principale (MainActivity)
+        // Retour automatique à l'activité précédente après 2 secondes
         new android.os.Handler().postDelayed(() -> {
             finish(); // Termine l’activité actuelle
-        }, 2000); // Ajoute un délai de 2 secondes pour l’animation
+        }, 2000);
     }
-
 }

@@ -10,12 +10,18 @@ import android.widget.BaseAdapter;
 
 import java.util.List;
 
-import com.example.gestionnairedabsence.Etudiant;
-
+/**
+ * Adaptateur personnalisé pour afficher une liste d'étudiants avec leur statut de présence.
+ */
 public class EtudiantAdapter extends BaseAdapter {
     private final Context context;
     private final List<Etudiant> etudiants;
 
+    /**
+     * Constructeur de l'adaptateur.
+     * @param context Contexte de l'application
+     * @param etudiants Liste des étudiants à afficher
+     */
     public EtudiantAdapter(Context context, List<Etudiant> etudiants) {
         this.context = context;
         this.etudiants = etudiants;
@@ -52,19 +58,19 @@ public class EtudiantAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        // Ne masque que la première ligne
+        // Masquer la première ligne (en-tête)
         if (position == 0) {
             convertView.setVisibility(View.GONE);
             convertView.setClickable(false);
-            return convertView; // Retourne directement sans configurer
+            return convertView;
         }
 
-        // Affiche correctement les autres lignes
+        // Affichage des informations de l'étudiant
         convertView.setVisibility(View.VISIBLE);
         Etudiant etudiant = etudiants.get(position);
         holder.nomPrenomTextView.setText(etudiant.getNom() + " " + etudiant.getPrenom());
 
-        // Met à jour l'icône en fonction de la présence
+        // Mise à jour de l'icône selon la présence
         if (etudiant.getPresence() == 1) {
             holder.presenceIcon.setImageResource(android.R.drawable.checkbox_on_background);
         } else {
@@ -81,7 +87,9 @@ public class EtudiantAdapter extends BaseAdapter {
         return convertView;
     }
 
-
+    /**
+     * Classe interne pour stocker les vues associées à chaque élément de la liste.
+     */
     private static class ViewHolder {
         TextView nomPrenomTextView;
         ImageView presenceIcon;
