@@ -2,16 +2,10 @@ package com.example.gestionnairedabsence;
 
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import android.content.Intent;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
     @Override
@@ -25,9 +19,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Désactiver le bouton
         buttonSecure.setEnabled(false);
-        buttonSecure.setAlpha(0.5f); // Facultatif : changer l'apparence pour indiquer qu'il est inactif
+        buttonSecure.setAlpha(0.5f);
 
-        // Redirection vers l'authentification sécurisée (le clic ne fonctionne plus car le bouton est désactivé)
+        // Redirection vers l'authentification sécurisée (bouton est désactivé)
         buttonSecure.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
