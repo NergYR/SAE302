@@ -24,7 +24,7 @@ ifeq ($(UNAME_S),Linux)
 else ifeq ($(UNAME_S),Darwin)
     # Configuration MacOS
     RM = rm -f
-    CC = clang
+    CC = gcc
     CFLAGS = -O2 -Wall
     LIB = -lm -L/usr/local/opt/libssh/lib -lssh -lpthread
     INC = -I. -I/usr/local/opt/libssh/include
