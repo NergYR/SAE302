@@ -44,5 +44,4 @@ int connect_to_server(const char *hostname, int portno, int *sockfd) {
     return 0;
 }
 
-// Supprimer complètement la fonction createModifiedCSV de ce fichier
-// Elle est maintenant dans Client.c
+// createModifiedCSV a été supprimée

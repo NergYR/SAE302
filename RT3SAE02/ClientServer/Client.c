@@ -53,7 +53,7 @@ void processAttendance(char* buffer, Student* students, int* nbStudents) {
 
         int field = 0;
         token = strtok_r(linecopy, ";", &lineptr);
-        while (token != NULL && field < 8) {
+        while (token != NULL && field < 7) {
             switch(field) {
                 case 0: strncpy(student.etudid, token, sizeof(student.etudid)-1); break;
                 case 1: strncpy(student.nip, token, sizeof(student.nip)-1); break;
@@ -68,21 +68,24 @@ void processAttendance(char* buffer, Student* students, int* nbStudents) {
             field++;
         }
 
-        if (field == 8) {
+        if (field == 7) {
             printf("\n----------------------------------------");
-            printf("\nÉtudiant %d:", *nbStudents + 1);
-            printf("\nNom: %s %s", student.nom, student.prenom);
-            printf("\nTP: %s", student.tp);
-            printf("\nPrésent ? (o/n) : ");
+            printf("\n[%s, %s, %s, %s, %s, %s, %s, %s] Si l'étudiant est présent entrez présent (respectivement absent) : ",
+                   student.etudid, student.nip, student.etat, student.civilite, student.nom, student.nomusuel, student.prenom, student.tp);
             
-            char reponse;
-            scanf(" %c", &reponse);
-            while (getchar() != '\n');
+            char reponse[10] = "absent";  // Valeur par défaut
+            fgets(reponse, sizeof(reponse), stdin);
+            reponse[strcspn(reponse, "\n")] = 0;  // Supprimer le saut de ligne
 
-            student.presence = (reponse == 'o' || reponse == 'O') ? 'P' : 'A';
+            if (strlen(reponse) == 0) {
+                strncpy(student.presence, "absent", sizeof(student.presence)-1);
+            } else {
+                strncpy(student.presence, reponse, sizeof(student.presence)-1);
+            }
+            student.presence[sizeof(student.presence)-1] = '\0';  // Assurer la terminaison de la chaîne
             students[*nbStudents] = student;
             (*nbStudents)++;
-            printf("Présence enregistrée : %c\n", student.presence);
+            printf("Présence enregistrée : %s\n", student.presence);
         } else {
             printf("[DEBUG] Skipping invalid line: %s (got %d fields)\n", line, field);
         }
@@ -106,7 +109,7 @@ char* createModifiedCSV(Student* students, int nbStudents) {
     // Ajouter chaque étudiant
     for (int i = 0; i < nbStudents; i++) {
         char line[256];
-        snprintf(line, sizeof(line), "%s;%s;%s;%s;%s;%s;%s;%s;%c\n",
+        snprintf(line, sizeof(line), "%s;%s;%s;%s;%s;%s;%s;%s;%s\n",
                 students[i].etudid, students[i].nip, students[i].etat,
                 students[i].civilite, students[i].nom, students[i].nomusuel,
                 students[i].prenom, students[i].tp, students[i].presence);
