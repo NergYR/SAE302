@@ -51,7 +51,7 @@ public class CommServ {
         try {
             String line = ";";
             while (!line.trim().isEmpty() && line!=null){
-                line = in.readLine();
+                line = input.readLine();
                 result.add(line);
             }
         } 
